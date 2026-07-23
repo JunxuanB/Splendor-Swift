@@ -1,3 +1,4 @@
+import LuminoreCore
 import SwiftData
 import XCTest
 @testable import Luminore
@@ -73,6 +74,33 @@ final class PersistenceModelsTests: XCTestCase {
         XCTAssertEqual(active.count, 1)
         XCTAssertEqual(active.first?.wasHost, true)
         XCTAssertEqual(active.first?.lastKnownIsMyTurn, true)
+        XCTAssertEqual(saved.first?.multiplayerMode, .lan)
+        XCTAssertEqual(active.first?.multiplayerMode, .lan)
+    }
+
+    func testInternetResumeMetadataPersistsWithServerSnapshotAndToken() throws {
+        let context = try makeContext()
+        let record = ActiveMatchRecord(
+            ownerKey: UUID().uuidString,
+            gameID: UUID(),
+            roomID: UUID(),
+            roomName: "Relay Room",
+            modeRawValue: "standard",
+            myParticipantID: UUID(),
+            wasHost: false,
+            transportRawValue: MultiplayerMode.internet.rawValue,
+            serverURLString: "https://relay.example.com",
+            isPublic: false,
+            sessionToken: "seat-token"
+        )
+        context.insert(record)
+        try context.save()
+
+        let restored = try XCTUnwrap(context.fetch(FetchDescriptor<ActiveMatchRecord>()).first)
+        XCTAssertEqual(restored.multiplayerMode, .internet)
+        XCTAssertEqual(restored.serverURL?.absoluteString, "https://relay.example.com")
+        XCTAssertFalse(restored.isPublic)
+        XCTAssertEqual(restored.sessionToken, "seat-token")
     }
 
     func testAccountAndPlaceholderRecordsPersistInMemory() throws {
@@ -93,6 +121,103 @@ final class PersistenceModelsTests: XCTestCase {
         XCTAssertEqual(games.first?.gameID, gameID)
         // logicalKey is now unique per profile rather than a shared "primary" key.
         XCTAssertEqual(account.logicalKey, account.uuid.uuidString)
+    }
+
+    func testFinishedOutcomePersistsPerProfileAndIsIdempotent() throws {
+        let context = try makeContext()
+        let winner = Participant(id: UUID(), nickname: "Winner", medalCount: 11)
+        let loser = Participant(id: UUID(), nickname: "Loser", medalCount: 4)
+        let bot = Participant(id: UUID(), nickname: "Bot", kind: .bot)
+        var state = try StandardRuleset().makeGame(
+            participants: [winner, loser, bot],
+            configuration: .init(),
+            seed: 22
+        )
+        let finishedAt = Date(timeIntervalSince1970: 1_700_000_000)
+        state.status = .finished
+        state.players[0].medalCount = 12
+        state.result = GameResult(
+            standings: [
+                .init(playerID: winner.id, nickname: winner.nickname, prestige: 15, developmentCards: 8, rank: 1, isWinner: true),
+                .init(playerID: loser.id, nickname: loser.nickname, prestige: 9, developmentCards: 6, rank: 2, isWinner: false),
+                .init(playerID: bot.id, nickname: bot.nickname, prestige: 4, developmentCards: 5, rank: 3, isWinner: false),
+            ],
+            winnerIDs: [winner.id],
+            finishedAt: finishedAt
+        )
+        let snapshot = state.snapshot(for: winner.id)
+        let winnerOwner = winner.id.uuidString
+
+        let first = try MatchOutcomeRecorder.record(
+            snapshot: snapshot,
+            ownerKey: winnerOwner,
+            localParticipantID: winner.id,
+            transport: .internet,
+            context: context
+        )
+        let repeated = try MatchOutcomeRecorder.record(
+            snapshot: snapshot,
+            ownerKey: winnerOwner,
+            localParticipantID: winner.id,
+            transport: .internet,
+            context: context
+        )
+        let loserResult = try MatchOutcomeRecorder.record(
+            snapshot: snapshot,
+            ownerKey: loser.id.uuidString,
+            localParticipantID: loser.id,
+            transport: .internet,
+            context: context
+        )
+
+        XCTAssertEqual(first, MatchOutcomeRecordingResult(insertedHistory: true, insertedMedals: 1))
+        XCTAssertEqual(repeated, MatchOutcomeRecordingResult(insertedHistory: false, insertedMedals: 0))
+        XCTAssertEqual(loserResult, MatchOutcomeRecordingResult(insertedHistory: true, insertedMedals: 0))
+
+        let medals = try context.fetch(FetchDescriptor<MedalRecord>())
+        let histories = try context.fetch(FetchDescriptor<CompletedGameRecord>())
+        XCTAssertEqual(medals.count, 1)
+        XCTAssertEqual(medals.first?.ownerKey, winnerOwner)
+        XCTAssertEqual(medals.first?.issuerUUID, loser.id)
+        XCTAssertEqual(medals.first?.awardedAt, finishedAt)
+        XCTAssertEqual(histories.count, 2)
+        let winnerHistory = try XCTUnwrap(histories.first { $0.ownerKey == winnerOwner })
+        XCTAssertEqual(winnerHistory.multiplayerMode, .internet)
+        XCTAssertEqual(winnerHistory.result, state.result)
+    }
+
+    func testLogicalKeysDeduplicateCloudMergedRowsInPresentation() throws {
+        let context = try makeContext()
+        let ownerKey = UUID().uuidString
+        let issuer = UUID()
+        let game = UUID()
+        context.insert(MedalRecord(ownerKey: ownerKey, issuerUUID: issuer, issuerNicknameSnapshot: "A", gameID: game))
+        context.insert(MedalRecord(ownerKey: ownerKey, issuerUUID: issuer, issuerNicknameSnapshot: "A", gameID: game))
+        context.insert(MedalRecord(issuerUUID: issuer, issuerNicknameSnapshot: "Legacy", gameID: game))
+        try context.save()
+
+        let medals = try context.fetch(FetchDescriptor<MedalRecord>())
+        XCTAssertEqual(medals.uniqueScopedMedals.count, 1)
+    }
+
+    func testAwardPresentationGroupsEveryHumanLoserAndWinner() throws {
+        let winnerOne = Participant(id: UUID(), nickname: "W1", medalCount: 7)
+        let winnerTwo = Participant(id: UUID(), nickname: "W2", medalCount: 9)
+        let loser = Participant(id: UUID(), nickname: "L")
+        let bot = Participant(id: UUID(), nickname: "Bot", kind: .bot)
+        var state = try StandardRuleset().makeGame(
+            participants: [winnerOne, winnerTwo, loser, bot],
+            configuration: .init(),
+            seed: 24
+        )
+        state.status = .finished
+        state.result = GameResult(standings: [], winnerIDs: [winnerOne.id, winnerTwo.id])
+
+        let presentation = MedalAwardPresentation(snapshot: state.snapshot(for: winnerOne.id))
+
+        XCTAssertEqual(presentation.winners.map(\.id), [winnerOne.id, winnerTwo.id])
+        XCTAssertEqual(presentation.issuers.map(\.id), [loser.id])
+        XCTAssertEqual(presentation.transferCount, 2)
     }
 
     func testMultipleProfilesCoexistUnderOneStore() throws {

@@ -4,6 +4,7 @@ import SwiftUI
 struct HomeView: View {
     let profile: AccountProfile
     @Query private var activeMatches: [ActiveMatchRecord]
+    @Query private var medals: [MedalRecord]
 
     init(profile: AccountProfile) {
         self.profile = profile
@@ -13,7 +14,14 @@ struct HomeView: View {
             sort: \.updatedAt,
             order: .reverse
         )
+        _medals = Query(
+            filter: #Predicate<MedalRecord> { $0.ownerKey == key },
+            sort: \.awardedAt,
+            order: .reverse
+        )
     }
+
+    private var medalCount: Int { medals.uniqueScopedMedals.count }
 
     var body: some View {
         NavigationStack {
@@ -40,7 +48,16 @@ struct HomeView: View {
 
                     if let active = activeMatches.first {
                         NavigationLink {
-                            LANFlowView(profile: profile, autoResume: true)
+                            MultiplayerFlowView(
+                                profile: profile,
+                                mode: active.multiplayerMode,
+                                serverURL: active.multiplayerMode == .internet
+                                    ? (active.serverURL ?? InternetServerSettings.defaultURL)
+                                    : nil,
+                                restoredSessionToken: active.sessionToken.isEmpty ? nil : active.sessionToken,
+                                medalCount: medalCount,
+                                autoResume: true
+                            )
                         } label: {
                             ResumeMatchCard(record: active)
                         }
@@ -50,7 +67,7 @@ struct HomeView: View {
                     VStack(alignment: .leading, spacing: 12) {
                         Text("home.chooseMode").font(.headline)
                         NavigationLink {
-                            LANFlowView(profile: profile)
+                            MultiplayerFlowView(profile: profile, mode: .lan, medalCount: medalCount)
                         } label: {
                             ModeCard(
                                 title: "mode.lan.title",
@@ -61,18 +78,34 @@ struct HomeView: View {
                         }
                         .buttonStyle(.plain)
 
-                        ModeCard(
-                            title: "mode.internet.title",
-                            subtitle: "common.comingSoon",
-                            systemImage: "globe",
-                            enabled: false
-                        )
-                        ModeCard(
-                            title: "mode.multipeer.title",
-                            subtitle: "common.comingSoon",
-                            systemImage: "antenna.radiowaves.left.and.right",
-                            enabled: false
-                        )
+                        NavigationLink {
+                            MultiplayerFlowView(
+                                profile: profile,
+                                mode: .internet,
+                                serverURL: InternetServerSettings.savedURL,
+                                medalCount: medalCount
+                            )
+                        } label: {
+                            ModeCard(
+                                title: "mode.internet.title",
+                                subtitle: "mode.internet.subtitle",
+                                systemImage: "globe",
+                                enabled: true
+                            )
+                        }
+                        .buttonStyle(.plain)
+
+                        NavigationLink {
+                            MultiplayerFlowView(profile: profile, mode: .nearby, medalCount: medalCount)
+                        } label: {
+                            ModeCard(
+                                title: "mode.multipeer.title",
+                                subtitle: "mode.multipeer.subtitle",
+                                systemImage: "antenna.radiowaves.left.and.right",
+                                enabled: true
+                            )
+                        }
+                        .buttonStyle(.plain)
                     }
                 }
                 .padding(20)

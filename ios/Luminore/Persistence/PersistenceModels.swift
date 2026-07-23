@@ -1,4 +1,5 @@
 import Foundation
+import LuminoreCore
 import SwiftData
 
 @Model
@@ -25,33 +26,75 @@ final class AccountProfile {
 @Model
 final class MedalRecord {
     var id: UUID = UUID()
+    /// Owning `AccountProfile.uuid.uuidString`. Empty values are legacy/unscoped
+    /// records and are intentionally hidden from every profile.
+    var ownerKey: String = ""
+    /// Stable per-profile award identity. CloudKit-backed SwiftData models cannot
+    /// use unique constraints, so callers and views deduplicate with this key.
+    var logicalKey: String = ""
     var issuerUUID: UUID = UUID()
     var issuerNicknameSnapshot: String = ""
     var gameID: UUID = UUID()
     var awardedAt: Date = Date()
 
-    init(issuerUUID: UUID, issuerNicknameSnapshot: String, gameID: UUID, awardedAt: Date = Date()) {
+    init(
+        ownerKey: String = "",
+        issuerUUID: UUID,
+        issuerNicknameSnapshot: String,
+        gameID: UUID,
+        awardedAt: Date = Date()
+    ) {
+        self.ownerKey = ownerKey
+        logicalKey = Self.makeLogicalKey(ownerKey: ownerKey, gameID: gameID, issuerUUID: issuerUUID)
         self.issuerUUID = issuerUUID
         self.issuerNicknameSnapshot = issuerNicknameSnapshot
         self.gameID = gameID
         self.awardedAt = awardedAt
+    }
+
+    static func makeLogicalKey(ownerKey: String, gameID: UUID, issuerUUID: UUID) -> String {
+        "\(ownerKey)|\(gameID.uuidString)|\(issuerUUID.uuidString)"
     }
 }
 
 @Model
 final class CompletedGameRecord {
     var id: UUID = UUID()
+    var ownerKey: String = ""
+    var logicalKey: String = ""
     var gameID: UUID = UUID()
+    var localParticipantID: UUID = UUID()
     var modeRawValue: String = "standard"
+    var transportRawValue: String = MultiplayerMode.lan.rawValue
     var endedAt: Date = Date()
     var resultPayload: Data = Data()
 
-    init(gameID: UUID, modeRawValue: String, endedAt: Date = Date(), resultPayload: Data = Data()) {
+    init(
+        ownerKey: String = "",
+        gameID: UUID,
+        localParticipantID: UUID = UUID(),
+        modeRawValue: String,
+        transportRawValue: String = MultiplayerMode.lan.rawValue,
+        endedAt: Date = Date(),
+        resultPayload: Data = Data()
+    ) {
+        self.ownerKey = ownerKey
+        logicalKey = Self.makeLogicalKey(ownerKey: ownerKey, gameID: gameID)
         self.gameID = gameID
+        self.localParticipantID = localParticipantID
         self.modeRawValue = modeRawValue
+        self.transportRawValue = transportRawValue
         self.endedAt = endedAt
         self.resultPayload = resultPayload
     }
+
+    static func makeLogicalKey(ownerKey: String, gameID: UUID) -> String {
+        "\(ownerKey)|\(gameID.uuidString)"
+    }
+
+    var gameMode: GameMode { GameMode(rawValue: modeRawValue) ?? .standard }
+    var multiplayerMode: MultiplayerMode { MultiplayerMode(rawValue: transportRawValue) ?? .lan }
+    var result: GameResult? { try? JSONDecoder().decode(GameResult.self, from: resultPayload) }
 }
 
 enum PersistenceController {

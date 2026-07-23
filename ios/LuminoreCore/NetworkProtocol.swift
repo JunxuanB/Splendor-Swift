@@ -1,5 +1,11 @@
 import Foundation
 
+public enum MultiplayerMode: String, Codable, CaseIterable, Sendable {
+    case lan
+    case internet
+    case nearby
+}
+
 public struct RoomDescriptor: Identifiable, Codable, Hashable, Sendable {
     public let id: UUID
     public var name: String
@@ -67,6 +73,7 @@ public struct AuthChallenge: Codable, Equatable, Sendable {
 public struct JoinRequest: Codable, Equatable, Sendable {
     public let participantID: UUID
     public let nickname: String
+    public let medalCount: Int
     public let authenticationCode: Data
     public let sessionToken: String?
     /// Local, non-synced identifier of the joining device (see `DeviceIdentity`).
@@ -77,15 +84,33 @@ public struct JoinRequest: Codable, Equatable, Sendable {
     public init(
         participantID: UUID,
         nickname: String,
+        medalCount: Int = 0,
         authenticationCode: Data,
         sessionToken: String?,
         deviceInstallID: UUID? = nil
     ) {
         self.participantID = participantID
         self.nickname = nickname
+        self.medalCount = max(0, medalCount)
         self.authenticationCode = authenticationCode
         self.sessionToken = sessionToken
         self.deviceInstallID = deviceInstallID
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case participantID, nickname, medalCount, authenticationCode, sessionToken, deviceInstallID
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.init(
+            participantID: try container.decode(UUID.self, forKey: .participantID),
+            nickname: try container.decode(String.self, forKey: .nickname),
+            medalCount: try container.decodeIfPresent(Int.self, forKey: .medalCount) ?? 0,
+            authenticationCode: try container.decode(Data.self, forKey: .authenticationCode),
+            sessionToken: try container.decodeIfPresent(String.self, forKey: .sessionToken),
+            deviceInstallID: try container.decodeIfPresent(UUID.self, forKey: .deviceInstallID)
+        )
     }
 }
 
@@ -110,6 +135,7 @@ public enum NetworkMessage: Codable, Equatable, Sendable {
     case enterConfiguration
     case startGame
     case action(GameAction)
+    case gameAnimation(GameAnimationEvent)
     case gameState(ClientGameSnapshot)
     case returnToConfiguration
     case leave
@@ -191,18 +217,6 @@ public protocol RoomDiscovery: Sendable {
     var rooms: AsyncStream<[RoomDescriptor]> { get }
     func start() async
     func stop() async
-}
-
-public enum TransportEvent: Sendable {
-    case connected
-    case disconnected(Error?)
-    case message(WireEnvelope)
-}
-
-public protocol SessionTransport: Sendable {
-    var events: AsyncStream<TransportEvent> { get }
-    func send(_ envelope: WireEnvelope) async throws
-    func disconnect() async
 }
 
 public protocol BotController: Sendable {

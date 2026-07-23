@@ -115,7 +115,7 @@ struct PlayerInventoryBar: View {
                             .font(.title.bold().monospacedDigit())
                             .contentTransition(.numericText())
                             .popEffect(trigger: player.prestige)
-                            .gameFlightAnchor(.scoreLabel)
+                            .gameFlightAnchor(.scoreLabel(player.id))
                         Text("game.score.total")
                             .font(.caption2)
                             .foregroundStyle(.secondary)
@@ -134,7 +134,7 @@ struct PlayerInventoryBar: View {
                             .font(.caption2)
                             .foregroundStyle(.secondary)
                     }
-                    .gameFlightAnchor(.reservedArea)
+                    .gameFlightAnchor(.reservedArea(player.id))
                 }
                 .frame(width: 54, alignment: .leading)
                 .contentShape(Rectangle())
@@ -153,7 +153,7 @@ struct PlayerInventoryBar: View {
                         tokens: player.tokens[gem, default: 0]
                     )
                     .popEffect(trigger: player.tokens[gem, default: 0] + player.bonuses[gem, default: 0])
-                    .gameFlightAnchor(.playerStack(gem))
+                    .gameFlightAnchor(.playerStack(player.id, gem))
                     .frame(maxWidth: .infinity)
                 }
             }
@@ -196,6 +196,8 @@ private struct TurnProgressBar: View {
 }
 
 struct CurrentTurnBorder: View {
+    @Environment(\.colorScheme) private var colorScheme
+
     var body: some View {
         TimelineView(.animation(minimumInterval: 1.0 / 30.0)) { context in
             let cycleDuration = 16.0
@@ -203,29 +205,61 @@ struct CurrentTurnBorder: View {
                 .truncatingRemainder(dividingBy: cycleDuration) / cycleDuration
             let angle = Angle.degrees(progress * 360)
 
-            RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .strokeBorder(
-                    AngularGradient(
-                        colors: [
-                            Color.accentColor.opacity(0.12),
-                            Color.cyan.opacity(0.72),
-                            Color.white.opacity(0.82),
-                            Color.cyan.opacity(0.42),
-                            Color.accentColor.opacity(0.12),
-                            Color.accentColor.opacity(0.12)
-                        ],
-                        center: .center,
-                        startAngle: angle,
-                        endAngle: angle + .degrees(360)
-                    ),
-                    lineWidth: 3
-                )
-                .shadow(color: Color.accentColor.opacity(0.3), radius: 7)
-                .padding(2)
-                .ignoresSafeArea()
+            ZStack {
+                if colorScheme == .light {
+                    // A darker foundation keeps the glow visible against white
+                    // navigation bars and the grouped game-board background.
+                    turnContour
+                        .strokeBorder(Color.accentColor.opacity(0.42), lineWidth: 7)
+                        .shadow(color: Color.accentColor.opacity(0.52), radius: 4)
+                }
+
+                turnContour
+                    .strokeBorder(
+                        AngularGradient(
+                            colors: gradientColors,
+                            center: .center,
+                            startAngle: angle,
+                            endAngle: angle + .degrees(360)
+                        ),
+                        lineWidth: colorScheme == .light ? 4 : 3
+                    )
+                    .shadow(
+                        color: Color.accentColor.opacity(colorScheme == .light ? 0.62 : 0.3),
+                        radius: colorScheme == .light ? 5 : 7
+                    )
+            }
+            .padding(2)
+            .ignoresSafeArea()
         }
         .allowsHitTesting(false)
         .accessibilityHidden(true)
+    }
+
+    // In a full-screen scene this inherits the display's system-provided
+    // contour, including the different corner radii of each iPhone model.
+    private var turnContour: ContainerRelativeShape { ContainerRelativeShape() }
+
+    private var gradientColors: [Color] {
+        if colorScheme == .dark {
+            return [
+                Color.accentColor.opacity(0.12),
+                Color.cyan.opacity(0.72),
+                Color.white.opacity(0.82),
+                Color.cyan.opacity(0.42),
+                Color.accentColor.opacity(0.12),
+                Color.accentColor.opacity(0.12)
+            ]
+        }
+
+        return [
+            Color.accentColor.opacity(0.38),
+            Color(red: 0.00, green: 0.45, blue: 0.72).opacity(0.96),
+            Color(red: 0.00, green: 0.30, blue: 0.64).opacity(0.98),
+            Color.cyan.opacity(0.78),
+            Color.accentColor.opacity(0.42),
+            Color.accentColor.opacity(0.38)
+        ]
     }
 }
 
@@ -237,7 +271,7 @@ struct GracePeriodBorder: View {
             let overdue = context.date.timeIntervalSince(deadline)
             if overdue >= 0, overdue <= 5.2 {
                 let pulse = (sin(context.date.timeIntervalSinceReferenceDate * .pi * 3) + 1) / 2
-                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                ContainerRelativeShape()
                     .strokeBorder(
                         Color.red.opacity(0.32 + pulse * 0.68),
                         lineWidth: 5

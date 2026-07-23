@@ -3,9 +3,9 @@ import SwiftUI
 
 enum GameAnchorID: Hashable {
     case bankGem(GemColor)
-    case playerStack(GemColor)
-    case scoreLabel
-    case reservedArea
+    case playerStack(UUID, GemColor)
+    case scoreLabel(UUID)
+    case reservedArea(UUID)
     case marketCard(String)
     case nobleTile(String)
 }
@@ -36,6 +36,7 @@ struct GameFlight: Identifiable {
         case gem(GemColor)
         case cardBuy(DevelopmentCard)
         case cardReserve(DevelopmentCard)
+        case noble(NobleTile)
     }
 
     let id = UUID()
@@ -43,6 +44,8 @@ struct GameFlight: Identifiable {
     let from: GameAnchorID
     let to: GameAnchorID
     var delay: Double = 0
+    var resolvedStart: CGRect?
+    var resolvedEnd: CGRect?
 }
 
 struct GameBurst: Identifiable {
@@ -56,18 +59,24 @@ struct GameFlightLayer: View {
     let anchors: [GameAnchorID: Anchor<CGRect>]
     let proxy: GeometryProxy
     let onFlightEnded: (UUID) -> Void
+    let onFlightResolved: (UUID, CGRect, CGRect) -> Void
     let onBurstEnded: (UUID) -> Void
 
     var body: some View {
         ZStack {
             ForEach(flights) { flight in
-                if let from = anchors[flight.from], let to = anchors[flight.to] {
+                if let start = flight.resolvedStart ?? anchors[flight.from].map({ proxy[$0] }),
+                   let end = flight.resolvedEnd ?? anchors[flight.to].map({ proxy[$0] }) {
                     GameFlightView(
                         flight: flight,
-                        start: proxy[from],
-                        end: proxy[to],
+                        start: start,
+                        end: end,
                         onLand: { onFlightEnded(flight.id) }
                     )
+                    .onAppear {
+                        guard flight.resolvedStart == nil || flight.resolvedEnd == nil else { return }
+                        onFlightResolved(flight.id, start, end)
+                    }
                 }
             }
 
@@ -90,18 +99,28 @@ private struct GameFlightView: View {
     let onLand: () -> Void
 
     @State private var moved = false
+    @State private var wiggle: Double = 0
     @State private var didLand = false
+
+    private var isNoble: Bool {
+        if case .noble = flight.kind { return true }
+        return false
+    }
 
     private var endScale: CGFloat {
         switch flight.kind {
         case .gem: 0.7
         case .cardBuy, .cardReserve: 0.32
+        case .noble: 0.28
         }
     }
+
+    private var flightResponse: Double { isNoble ? 0.55 : 0.5 }
 
     var body: some View {
         ghost
             .frame(width: start.width, height: start.height)
+            .rotationEffect(.degrees(wiggle))
             .scaleEffect(moved ? endScale : 1)
             .opacity(moved ? 0.15 : 1)
             .position(moved ? end.gameCenter : start.gameCenter)
@@ -109,12 +128,28 @@ private struct GameFlightView: View {
     }
 
     private func run() {
-        withAnimation(.spring(response: 0.5, dampingFraction: 0.82).delay(flight.delay)) {
+        if isNoble {
+            DispatchQueue.main.asyncAfter(deadline: .now() + flight.delay) {
+                withAnimation(.easeInOut(duration: 0.08).repeatCount(7, autoreverses: true)) {
+                    wiggle = 9
+                }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
+                    wiggle = 0
+                    fly(delay: 0)
+                }
+            }
+        } else {
+            fly(delay: flight.delay)
+        }
+    }
+
+    private func fly(delay: Double) {
+        withAnimation(.spring(response: flightResponse, dampingFraction: 0.82).delay(delay)) {
             moved = true
         } completion: {
             land()
         }
-        DispatchQueue.main.asyncAfter(deadline: .now() + flight.delay + 0.6) { land() }
+        DispatchQueue.main.asyncAfter(deadline: .now() + delay + flightResponse + 0.1) { land() }
     }
 
     private func land() {
@@ -137,6 +172,12 @@ private struct GameFlightView: View {
         case let .cardBuy(card), let .cardReserve(card):
             DevelopmentCardView(card: card)
                 .shadow(color: .black.opacity(0.25), radius: 8, y: 4)
+        case let .noble(noble):
+            NobleTileView(noble: noble)
+                .shadow(
+                    color: Color(red: 0.86, green: 0.66, blue: 0.20).opacity(0.5),
+                    radius: 8
+                )
         }
     }
 }
@@ -146,21 +187,47 @@ private struct GameSparkleBurst: View {
     var count = 12
     let onDone: () -> Void
 
+    @Environment(\.colorScheme) private var colorScheme
     @State private var progress: CGFloat = 0
-    private let gold = Color(red: 1.0, green: 0.82, blue: 0.35)
+
+    private var gold: Color {
+        colorScheme == .dark
+            ? Color(red: 1.0, green: 0.82, blue: 0.35)
+            : Color(red: 0.76, green: 0.40, blue: 0.00)
+    }
+
+    private var flash: Color {
+        colorScheme == .dark
+            ? Color.yellow
+            : Color(red: 0.92, green: 0.53, blue: 0.02)
+    }
 
     var body: some View {
         ZStack {
             Circle()
-                .fill(Color.yellow.opacity(Double(0.5 * (1 - progress))))
-                .frame(width: 26, height: 26)
+                .fill(flash.opacity(Double((colorScheme == .light ? 0.62 : 0.5) * (1 - progress))))
+                .frame(
+                    width: colorScheme == .light ? 30 : 26,
+                    height: colorScheme == .light ? 30 : 26
+                )
                 .scaleEffect(1 + progress * 2.2)
+
+            if colorScheme == .light {
+                Circle()
+                    .strokeBorder(gold.opacity(Double(0.72 * (1 - progress))), lineWidth: 2)
+                    .frame(width: 30, height: 30)
+                    .scaleEffect(1 + progress * 2.2)
+            }
 
             ForEach(0 ..< count, id: \.self) { index in
                 let angle = Double(index) / Double(count) * 2 * .pi
                 Image(systemName: "sparkle")
                     .font(.system(size: 11, weight: .bold))
                     .foregroundStyle(gold)
+                    .shadow(
+                        color: colorScheme == .light ? gold.opacity(0.45) : .clear,
+                        radius: 1
+                    )
                     .scaleEffect(0.4 + (1 - progress) * 0.9)
                     .opacity(Double(1 - progress))
                     .offset(
@@ -172,7 +239,7 @@ private struct GameSparkleBurst: View {
         .position(center)
         .onAppear {
             withAnimation(.easeOut(duration: 0.7)) { progress = 1 }
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.72, execute: onDone)
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.72) { onDone() }
         }
     }
 }

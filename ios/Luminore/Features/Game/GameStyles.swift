@@ -22,12 +22,12 @@ extension GemColor {
 
     var iconName: String {
         switch self {
-        case .diamond: "diamond.fill"
-        case .sapphire: "drop.fill"
-        case .emerald: "leaf.fill"
-        case .ruby: "flame.fill"
-        case .onyx: "moon.fill"
-        case .gold: "seal.fill"
+        case .diamond: "diamond"
+        case .sapphire: "drop"
+        case .emerald: "leaf"
+        case .ruby: "flame"
+        case .onyx: "moon"
+        case .gold: "seal"
         }
     }
 

@@ -1,0 +1,23 @@
+{
+  "name": "luminore-relay",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "check": "tsc --noEmit && wrangler types --check",
+    "test": "vitest run",
+    "types": "wrangler types",
+    "dry-run": "wrangler deploy --dry-run",
+    "deploy": "wrangler deploy",
+    "smoke": "node scripts/smoke.mjs"
+  },
+  "devDependencies": {
+    "@cloudflare/vitest-pool-workers": "latest",
+    "@types/node": "latest",
+    "@types/ws": "^8.18.1",
+    "typescript": "latest",
+    "vitest": "latest",
+    "wrangler": "latest",
+    "ws": "^8.21.1"
+  }
+}

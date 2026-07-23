@@ -55,6 +55,10 @@ struct OpponentCarousel: View {
                         .foregroundStyle(.tint)
                 }
 
+                if opponent.kind == .human {
+                    MedalCountLabel(count: opponent.medalCount, compact: true)
+                }
+
                 if !opponent.isConnected {
                     Image(systemName: "wifi.slash")
                         .font(.caption)
@@ -69,10 +73,12 @@ struct OpponentCarousel: View {
                 Spacer()
 
                 stat("\(opponent.prestige)", label: "game.stat.score")
+                    .gameFlightAnchor(.scoreLabel(opponent.id))
                 Divider().frame(height: 22)
                 stat("\(opponent.developmentCardCount)", label: "game.stat.cards")
                 Divider().frame(height: 22)
                 stat("\(opponent.reservedCardCount)/3", label: "game.stat.reserved")
+                    .gameFlightAnchor(.reservedArea(opponent.id))
             }
 
             HStack(spacing: 5) {
@@ -83,6 +89,7 @@ struct OpponentCarousel: View {
                         tokens: opponent.tokens[gem, default: 0],
                         compact: true
                     )
+                    .gameFlightAnchor(.playerStack(opponent.id, gem))
                     .frame(maxWidth: .infinity)
                 }
             }

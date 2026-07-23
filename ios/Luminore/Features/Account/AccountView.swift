@@ -47,20 +47,8 @@ struct AccountView: View {
                 }
             }
 
-            Section("account.medals") {
-                ContentUnavailableView(
-                    "account.medals.empty",
-                    systemImage: "medal",
-                    description: Text("common.comingSoon")
-                )
-            }
-
-            Section("account.history") {
-                ContentUnavailableView(
-                    "account.history.empty",
-                    systemImage: "clock.arrow.circlepath",
-                    description: Text("common.comingSoon")
-                )
+            if let profile = activeProfile {
+                ProfileRecordsSections(profile: profile)
             }
         }
         .navigationTitle("account.title")

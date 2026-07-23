@@ -2,7 +2,7 @@ import LuminoreCore
 import SwiftUI
 
 struct GameBoardView: View {
-    @ObservedObject var session: LANSessionService
+    @ObservedObject var session: MatchSessionService
     let onExit: () -> Void
     let onSaveAndSuspend: () -> Void
 
@@ -16,13 +16,14 @@ struct GameBoardView: View {
     @State private var isShowingPassConfirmation = false
     @State private var flights: [GameFlight] = []
     @State private var bursts: [GameBurst] = []
-    @State private var lastPrestige: Int?
 
     private var snapshot: ClientGameSnapshot? { session.game }
     private var localPlayer: PublicPlayerSnapshot? {
         snapshot?.players.first { $0.id == session.localID }
     }
-    private var isLocalTurn: Bool { snapshot?.currentPlayerID == session.localID }
+    private var isLocalTurn: Bool {
+        !session.isOpeningTurnSelection && snapshot?.currentPlayerID == session.localID
+    }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -30,7 +31,7 @@ struct GameBoardView: View {
                 deadline: session.turnDeadline,
                 hasTimer: snapshot?.configuration.turnDurationSeconds != nil,
                 gracePeriodEnabled: snapshot?.configuration.turnGracePeriodEnabled == true,
-                canPause: session.isHost && !session.isPaused,
+                canPause: session.isHost && !session.isPaused && !session.isOpeningTurnSelection,
                 onPause: { session.pauseGame() },
                 onExit: { isShowingExitConfirmation = true }
             )
@@ -116,6 +117,7 @@ struct GameBoardView: View {
                     anchors: anchors,
                     proxy: proxy,
                     onFlightEnded: { id in flights.removeAll { $0.id == id } },
+                    onFlightResolved: resolveFlight,
                     onBurstEnded: { id in bursts.removeAll { $0.id == id } }
                 )
             }
@@ -127,28 +129,40 @@ struct GameBoardView: View {
             }
         }
         .overlay {
-            if snapshot?.configuration.turnGracePeriodEnabled == true,
+            if isLocalTurn,
+               snapshot?.configuration.turnGracePeriodEnabled == true,
                let deadline = session.turnDeadline {
                 GracePeriodBorder(deadline: deadline)
             }
         }
         .overlay {
-            if session.isPaused {
-                PausedCoverView(
-                    isHost: session.isHost,
-                    isAwaitingAssignment: session.isAwaitingResumeAssignment,
-                    participants: session.room?.participants ?? [],
-                    pendingSubstitutes: session.pendingSubstitutes,
-                    localID: session.localID,
-                    onResume: { session.resumeGame() },
-                    onSaveAndSuspend: onSaveAndSuspend,
-                    onAssign: { session.assignSubstitute(seatID: $0, substituteID: $1) },
-                    onContinueResumed: { session.continueResumedGame() }
+            if let snapshot, let selection = session.openingTurnSelection {
+                OpeningTurnRouletteView(
+                    players: snapshot.players,
+                    startingPlayerID: snapshot.startingPlayerID,
+                    selection: selection
                 )
                 .transition(.opacity)
             }
         }
-        .animation(.easeInOut(duration: 0.2), value: session.isPaused)
+        .overlay {
+            if let pause = session.matchPause {
+                switch pause.reason {
+                case .host:
+                    PausedCoverView(
+                        isHost: session.isHost,
+                        onResume: { session.resumeGame() },
+                        onSaveAndSuspend: onSaveAndSuspend
+                    )
+                    .transition(.opacity)
+                case .disconnect:
+                    DisconnectPauseView(pause: pause)
+                        .transition(.opacity)
+                }
+            }
+        }
+        .animation(.easeInOut(duration: 0.2), value: session.matchPause)
+        .animation(.easeInOut(duration: 0.25), value: session.openingTurnSelection)
         .navigationBarBackButtonHidden(true)
         .toolbar(.hidden, for: .navigationBar)
         .alert("game.exit.title", isPresented: $isShowingExitConfirmation) {
@@ -170,11 +184,9 @@ struct GameBoardView: View {
                 guard isLocalTurn else { return }
                 switch pending.kind {
                 case let .take(tokens):
-                    animateGems(tokens)
-                    submitAfterAnimation(.take(tokens: tokens, returning: returns))
-                case let .reserve(source, card):
-                    if let card { animateCard(card, source: source, isPurchase: false) }
-                    submitAfterAnimation(.reserve(source: source, returning: returns))
+                    session.submit(.take(tokens: tokens, returning: returns))
+                case let .reserve(source, _):
+                    session.submit(.reserve(source: source, returning: returns))
                 }
                 selectedGems = [:]
             }
@@ -198,8 +210,7 @@ struct GameBoardView: View {
                     },
                     onPurchase: { payment, nobleID in
                         guard isLocalTurn else { return }
-                        animateCard(selection.card, source: selection.source, isPurchase: true)
-                        submitAfterAnimation(
+                        session.submit(
                             .purchase(source: selection.source, payment: payment, nobleID: nobleID)
                         )
                         selectedCard = nil
@@ -222,17 +233,16 @@ struct GameBoardView: View {
             selectedGems = [:]
             let count = snapshot.map { opponents(in: $0).count } ?? 0
             opponentIndex = count == 0 ? 0 : min(opponentIndex, count - 1)
-            if let prestige = localPlayer?.prestige {
-                if let lastPrestige, prestige > lastPrestige {
-                    bursts.append(GameBurst(at: .scoreLabel))
-                }
-                lastPrestige = prestige
-            }
+        }
+        .onChange(of: session.gameAnimationEvent) { _, event in
+            if let event { animate(event) }
         }
         .onChange(of: snapshot?.currentPlayerID) { _, currentPlayerID in
             if currentPlayerID != session.localID { closePendingTurnUI() }
         }
-        .onAppear { lastPrestige = localPlayer?.prestige }
+        .sensoryFeedback(trigger: isLocalTurn) { wasLocalTurn, isLocalTurn in
+            !wasLocalTurn && isLocalTurn ? .success : nil
+        }
     }
 
     private func opponents(in snapshot: ClientGameSnapshot) -> [PublicPlayerSnapshot] {
@@ -242,10 +252,10 @@ struct GameBoardView: View {
     private func openOpponentReservedCards(_ opponent: PublicPlayerSnapshot) {
         reservedSheet = ReservedCardsSheetRequest(
             title: "game.opponent.reserved.title \(opponent.nickname)",
-            cards: [],
+            cards: opponent.reservedCards,
             cardCount: opponent.reservedCardCount,
             purchasableCardIDs: [],
-            hidesCards: true
+            isReadOnly: true
         )
     }
 
@@ -269,8 +279,7 @@ struct GameBoardView: View {
         if required > 0 {
             pendingReturn = PendingReturn(kind: .take(selectedGems), available: available, required: required)
         } else {
-            animateGems(selectedGems)
-            submitAfterAnimation(.take(tokens: selectedGems, returning: [:]))
+            session.submit(.take(tokens: selectedGems, returning: [:]))
             selectedGems = [:]
         }
     }
@@ -287,12 +296,48 @@ struct GameBoardView: View {
         if required > 0 {
             pendingReturn = PendingReturn(kind: .reserve(source, card), available: available, required: required)
         } else {
-            if let card { animateCard(card, source: source, isPurchase: false) }
-            submitAfterAnimation(.reserve(source: source, returning: [:]))
+            session.submit(.reserve(source: source, returning: [:]))
         }
     }
 
-    private func animateGems(_ gems: [GemColor: Int]) {
+    private func animate(_ event: GameAnimationEvent) {
+        let focusDelay = focusOnPlayer(event.playerID) ? 0.24 : 0
+        DispatchQueue.main.asyncAfter(deadline: .now() + focusDelay) {
+            switch event.kind {
+            case let .take(tokens):
+                animateGems(tokens, playerID: event.playerID)
+            case let .reserve(source, card):
+                if let card {
+                    animateCard(card, source: source, isPurchase: false, playerID: event.playerID)
+                }
+            case let .purchase(source, card, noble):
+                animateCard(card, source: source, isPurchase: true, playerID: event.playerID)
+                if card.prestige > 0 {
+                    scheduleBurst(at: .scoreLabel(event.playerID), after: 0.8)
+                }
+                if let noble {
+                    animateNoble(noble, playerID: event.playerID)
+                    scheduleBurst(at: .scoreLabel(event.playerID), after: 1.42)
+                }
+            case .pass:
+                break
+            }
+        }
+    }
+
+    /// Makes a remote actor visible before resolving their destination anchors.
+    @discardableResult
+    private func focusOnPlayer(_ playerID: UUID) -> Bool {
+        guard playerID != session.localID, let snapshot else { return false }
+        let visibleOpponents = opponents(in: snapshot)
+        guard let index = visibleOpponents.firstIndex(where: { $0.id == playerID }),
+              index != opponentIndex
+        else { return false }
+        withAnimation(.snappy) { opponentIndex = index }
+        return true
+    }
+
+    private func animateGems(_ gems: [GemColor: Int], playerID: UUID) {
         var index = 0
         for gem in GemColor.allCases {
             for _ in 0 ..< gems[gem, default: 0] {
@@ -300,7 +345,7 @@ struct GameBoardView: View {
                     GameFlight(
                         kind: .gem(gem),
                         from: .bankGem(gem),
-                        to: .playerStack(gem),
+                        to: .playerStack(playerID, gem),
                         delay: Double(index) * 0.08
                     )
                 )
@@ -310,29 +355,57 @@ struct GameBoardView: View {
         scheduleFlightCleanup()
     }
 
-    private func animateCard(_ card: DevelopmentCard, source: CardSource, isPurchase: Bool) {
+    private func animateCard(
+        _ card: DevelopmentCard,
+        source: CardSource,
+        isPurchase: Bool,
+        playerID: UUID
+    ) {
         let from: GameAnchorID
         switch source {
         case .market: from = .marketCard(card.id)
-        case .reserved: from = .reservedArea
+        case .reserved: from = .reservedArea(playerID)
         case .deck: return
         }
         flights.append(
             GameFlight(
                 kind: isPurchase ? .cardBuy(card) : .cardReserve(card),
                 from: from,
-                to: isPurchase ? .playerStack(card.bonus) : .reservedArea
+                to: isPurchase
+                    ? .playerStack(playerID, card.bonus)
+                    : .reservedArea(playerID),
+                delay: 0.28
             )
         )
         scheduleFlightCleanup()
     }
 
-    private func submitAfterAnimation(_ action: GameAction) {
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) { session.submit(action) }
+    private func animateNoble(_ noble: NobleTile, playerID: UUID) {
+        flights.append(
+            GameFlight(
+                kind: .noble(noble),
+                from: .nobleTile(noble.id),
+                to: .scoreLabel(playerID),
+                delay: 0.28
+            )
+        )
+        scheduleFlightCleanup()
+    }
+
+    private func resolveFlight(_ id: UUID, start: CGRect, end: CGRect) {
+        guard let index = flights.firstIndex(where: { $0.id == id }) else { return }
+        flights[index].resolvedStart = start
+        flights[index].resolvedEnd = end
+    }
+
+    private func scheduleBurst(at anchor: GameAnchorID, after delay: TimeInterval) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
+            bursts.append(GameBurst(at: anchor))
+        }
     }
 
     private func scheduleFlightCleanup() {
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { flights.removeAll() }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2) { flights.removeAll() }
     }
 
     private func closePendingTurnUI() {
@@ -341,6 +414,5 @@ struct GameBoardView: View {
         selectedCard = nil
         reservedSheet = nil
         isShowingPassConfirmation = false
-        flights.removeAll()
     }
 }

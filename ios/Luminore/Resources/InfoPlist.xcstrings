@@ -30,19 +30,36 @@
         }
       }
     },
+    "NSBluetoothAlwaysUsageDescription" : {
+      "comment" : "Privacy - Bluetooth Usage Description",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Luminore uses Bluetooth to discover and connect to nearby players."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "闪耀矿工使用蓝牙发现并连接附近的玩家。"
+          }
+        }
+      }
+    },
     "NSLocalNetworkUsageDescription" : {
       "comment" : "Privacy - Local Network Usage Description",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Luminore uses your local network to discover and play with nearby devices."
+            "value" : "Luminore uses your local network to discover and play with nearby devices over LAN or Multipeer Connectivity."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "闪耀矿工使用局域网发现附近设备并进行对战。"
+            "value" : "闪耀矿工使用局域网或多点连接发现附近设备并进行对战。"
           }
         }
       }

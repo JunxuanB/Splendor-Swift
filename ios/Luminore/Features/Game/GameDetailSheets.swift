@@ -25,7 +25,7 @@ struct ReservedCardsSheetRequest: Identifiable {
     let cards: [DevelopmentCard]
     let cardCount: Int
     let purchasableCardIDs: Set<String>
-    var hidesCards = false
+    var isReadOnly = false
 }
 
 struct CardDetailSheet: View {
@@ -148,13 +148,7 @@ struct ReservedCardsSheet: View {
     var body: some View {
         NavigationStack {
             VStack(spacing: 18) {
-                if request.hidesCards, request.cardCount > 0 {
-                    ContentUnavailableView(
-                        "game.reserved.hidden",
-                        systemImage: "eye.slash",
-                        description: Text("game.reserved.hidden.description \(request.cardCount)")
-                    )
-                } else if request.cards.isEmpty {
+                if request.cards.isEmpty {
                     ContentUnavailableView(
                         "game.reserved.empty",
                         systemImage: "rectangle.stack",
@@ -191,7 +185,7 @@ struct ReservedCardsSheet: View {
                         }
                     }
 
-                    Text(request.hidesCards ? "game.reserved.hidden.footer" : "game.reserved.maximum")
+                    Text(request.isReadOnly ? "game.reserved.hidden.footer" : "game.reserved.maximum")
                         .font(.footnote)
                         .foregroundStyle(.secondary)
                 }

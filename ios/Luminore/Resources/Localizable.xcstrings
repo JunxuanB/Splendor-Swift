@@ -1,6 +1,9 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "·" : {
+
+    },
     "#%lld" : {
 
     },
@@ -253,6 +256,86 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "闪耀矿工"
+          }
+        }
+      }
+    },
+    "award.from" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Awarded by"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "颁发者"
+          }
+        }
+      }
+    },
+    "award.skip" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Skip"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "跳过"
+          }
+        }
+      }
+    },
+    "award.subtitle %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld medals are being presented"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在颁发 %lld 枚勋章"
+          }
+        }
+      }
+    },
+    "award.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Medal Ceremony"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "勋章颁发"
+          }
+        }
+      }
+    },
+    "award.to" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Winners"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "获胜者"
           }
         }
       }
@@ -630,13 +713,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Allows actions for 5 extra seconds. The countdown runs from −1 to −5 and the screen border flashes."
+            "value" : "Allows actions for 5 extra seconds. The countdown runs from −1 to −5 and the current player's screen border flashes."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "额外允许 5 秒操作时间；倒计时显示 −1 至 −5，并闪烁屏幕边框。"
+            "value" : "额外允许 5 秒操作时间；倒计时显示 −1 至 −5，并仅闪烁当前玩家的屏幕边框。"
           }
         }
       }
@@ -882,6 +965,54 @@
         }
       }
     },
+    "game.disconnect.countdown %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Continuing in %lld s"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld 秒后继续"
+          }
+        }
+      }
+    },
+    "game.disconnect.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Waiting to reconnect"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "等待重连"
+          }
+        }
+      }
+    },
+    "game.disconnect.waiting %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Waiting for %@"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在等待 %@ 重新连接"
+          }
+        }
+      }
+    },
     "game.exit" : {
       "localizations" : {
         "en" : {
@@ -896,102 +1027,6 @@
             "value" : "退出"
           }
         }
-      }
-    },
-    "game.pause.accessibility" : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Pause game" } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "暂停游戏" } }
-      }
-    },
-    "game.paused.title" : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Game Paused" } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "游戏已暂停" } }
-      }
-    },
-    "game.paused.host.hint" : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "You paused the match. Resume when everyone is ready." } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "你暂停了对局，大家准备好后继续。" } }
-      }
-    },
-    "game.paused.client.hint" : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "The host paused the match." } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "房主暂停了对局。" } }
-      }
-    },
-    "game.paused.resume" : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Resume" } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "继续游戏" } }
-      }
-    },
-    "game.paused.saveExit" : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Save & Exit" } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "保存并退出" } }
-      }
-    },
-    "game.resume.assign.title" : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Assign Seats" } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "分配座位" } }
-      }
-    },
-    "game.resume.assign.hint" : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Returning players reclaim their seats automatically. Assign an empty seat to a substitute, or leave it empty." } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "原玩家会自动坐回原位。可把空座位指派给替补，或留空。" } }
-      }
-    },
-    "game.resume.continue" : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Continue" } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "继续对局" } }
-      }
-    },
-    "game.resume.seat.online" : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Online" } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "在线" } }
-      }
-    },
-    "game.resume.seat.waiting" : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Waiting" } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "等待中" } }
-      }
-    },
-    "game.resume.seat.assign" : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Assign substitute" } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "指派替补" } }
-      }
-    },
-    "home.resume.title" : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Resume match" } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "重新加入对局" } }
-      }
-    },
-    "home.resume.yourTurn" : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Your turn" } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "轮到你" } }
-      }
-    },
-    "lan.rejoin.searching" : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Rejoining…" } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "正在重新加入…" } }
-      }
-    },
-    "lan.rejoin.detail" : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Looking for your game on the local network." } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "正在局域网中查找你的对局。" } }
       }
     },
     "game.exit.message" : {
@@ -1252,6 +1287,86 @@
         }
       }
     },
+    "game.opening.deciding" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choosing the first player…"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在决定先手…"
+          }
+        }
+      }
+    },
+    "game.opening.order" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Turn order"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "行动顺序"
+          }
+        }
+      }
+    },
+    "game.opening.order.pending" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Turns will continue in seat order"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "选出先手后将按座位顺序行动"
+          }
+        }
+      }
+    },
+    "game.opening.selected" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "First player selected"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "先手已选出"
+          }
+        }
+      }
+    },
+    "game.opening.starts %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ goes first"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ 先手"
+          }
+        }
+      }
+    },
     "game.opponent.next" : {
       "localizations" : {
         "en" : {
@@ -1344,6 +1459,102 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "确认不进行操作并跳过本回合吗？"
+          }
+        }
+      }
+    },
+    "game.pause.accessibility" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pause game"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "暂停游戏"
+          }
+        }
+      }
+    },
+    "game.paused.client.hint" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The host paused the match."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "房主暂停了对局。"
+          }
+        }
+      }
+    },
+    "game.paused.host.hint" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You paused the match. Resume when everyone is ready."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "你暂停了对局，大家准备好后继续。"
+          }
+        }
+      }
+    },
+    "game.paused.resume" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Resume"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "继续游戏"
+          }
+        }
+      }
+    },
+    "game.paused.saveExit" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Save & Exit"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "保存并退出"
+          }
+        }
+      }
+    },
+    "game.paused.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Game Paused"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "游戏已暂停"
           }
         }
       }
@@ -1447,6 +1658,7 @@
       }
     },
     "game.reserved.hidden" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1463,6 +1675,7 @@
       }
     },
     "game.reserved.hidden.description %lld" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1538,6 +1751,120 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%1$lld 张发展卡，%2$lld 枚筹码"
+          }
+        }
+      }
+    },
+    "game.resume.assign.hint" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Returning players reclaim their seats automatically. Assign an empty seat to a substitute, or leave it empty."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "原玩家会自动坐回原位。可把空座位指派给替补，或留空。"
+          }
+        }
+      }
+    },
+    "game.resume.assign.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Assign Seats"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "分配座位"
+          }
+        }
+      }
+    },
+    "game.resume.continue" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Continue"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "继续对局"
+          }
+        }
+      }
+    },
+    "game.resume.seat.assign" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Assign substitute"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "指派替补"
+          }
+        }
+      }
+    },
+    "game.resume.seat.online" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Online"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在线"
+          }
+        }
+      }
+    },
+    "game.resume.seat.waiting" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Waiting"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "等待中"
+          }
+        }
+      }
+    },
+    "game.resume.waitingHost" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Waiting for the host to continue…"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "等待房主继续对局…"
           }
         }
       }
@@ -1994,6 +2321,198 @@
         }
       }
     },
+    "history.date" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Date"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "日期"
+          }
+        }
+      }
+    },
+    "history.detail.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Match Result"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "对局结果"
+          }
+        }
+      }
+    },
+    "history.details" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Details"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "详情"
+          }
+        }
+      }
+    },
+    "history.game.short %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Game %@"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "对局 %@"
+          }
+        }
+      }
+    },
+    "history.gameID" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Game ID"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "对局 ID"
+          }
+        }
+      }
+    },
+    "history.gameMode" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Game Mode"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "玩法"
+          }
+        }
+      }
+    },
+    "history.outcome.loss" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Defeat"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "失败"
+          }
+        }
+      }
+    },
+    "history.outcome.tiedWin" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tied Victory"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "并列获胜"
+          }
+        }
+      }
+    },
+    "history.outcome.win" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Victory"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "获胜"
+          }
+        }
+      }
+    },
+    "history.standings" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Standings"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "完整排名"
+          }
+        }
+      }
+    },
+    "history.summary %lld %lld %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rank %1$lld of %2$lld · %3$lld prestige"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "第 %1$lld / %2$lld 名 · %3$lld 分"
+          }
+        }
+      }
+    },
+    "history.transport" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Battle Mode"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "对战方式"
+          }
+        }
+      }
+    },
     "home.chooseMode" : {
       "localizations" : {
         "en" : {
@@ -2026,7 +2545,415 @@
         }
       }
     },
+    "home.resume.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Resume match"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "重新加入对局"
+          }
+        }
+      }
+    },
+    "home.resume.yourTurn" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your turn"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "轮到你"
+          }
+        }
+      }
+    },
+    "host_closed" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The host closed this room."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "房主已关闭该房间。"
+          }
+        }
+      }
+    },
+    "host_timeout" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The host did not return within 30 minutes. This room has ended."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "房主在 30 分钟内未返回，本房间已结束。"
+          }
+        }
+      }
+    },
+    "https://example.com" : {
+
+    },
+    "identity_in_use" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This player identity is already in use."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "该玩家身份已在房间中使用。"
+          }
+        }
+      }
+    },
+    "incompatible_protocol" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The other device uses an incompatible game protocol."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "另一台设备的游戏协议版本不兼容。"
+          }
+        }
+      }
+    },
+    "incompatible_server" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This server is not compatible with this version of Luminore."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "该服务器与当前版本的闪耀矿工不兼容。"
+          }
+        }
+      }
+    },
+    "internet.room.code.copy" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copy room code"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "复制房间码"
+          }
+        }
+      }
+    },
+    "internet.room.code.hint" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Share this code so other players can join."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "分享此房间码即可邀请其他玩家加入。"
+          }
+        }
+      }
+    },
+    "internet.room.code.join" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Join"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "加入"
+          }
+        }
+      }
+    },
+    "internet.room.code.placeholder" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "6-character code"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "6 位房间码"
+          }
+        }
+      }
+    },
+    "internet.room.code.section" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Room Code"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "房间码"
+          }
+        }
+      }
+    },
+    "internet.room.code.share" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Share room code"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "分享房间码"
+          }
+        }
+      }
+    },
+    "internet.room.public" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Show in public room list"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "显示在公开房间列表"
+          }
+        }
+      }
+    },
+    "internet.rooms.empty" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No Public Rooms"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "暂无公开房间"
+          }
+        }
+      }
+    },
+    "internet.rooms.public" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Public Rooms"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "公开房间"
+          }
+        }
+      }
+    },
+    "internet.rooms.searching" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Refreshing the server room list…"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在刷新服务器房间列表…"
+          }
+        }
+      }
+    },
+    "internet.server.address" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Server URL"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "服务器 URL"
+          }
+        }
+      }
+    },
+    "internet.server.compatible" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Server is healthy and compatible."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "服务器运行正常且协议兼容。"
+          }
+        }
+      }
+    },
+    "internet.server.restoreDefault" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restore Default"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "恢复默认"
+          }
+        }
+      }
+    },
+    "internet.server.securityHint" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "HTTPS is required. HTTP is accepted only for localhost development."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "必须使用 HTTPS；仅本机开发服务器可使用 HTTP。"
+          }
+        }
+      }
+    },
+    "internet.server.test" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Test Compatibility"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "测试兼容性"
+          }
+        }
+      }
+    },
+    "internet.server.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Internet Server"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "互联网服务器"
+          }
+        }
+      }
+    },
+    "invalid_server_response" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The server returned an invalid response."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "服务器返回了无效响应。"
+          }
+        }
+      }
+    },
+    "invalid_server_url" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enter a valid HTTPS server URL."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "请输入有效的 HTTPS 服务器 URL。"
+          }
+        }
+      }
+    },
     "lan.connecting" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2150,6 +3077,40 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "你的席位会保留，重连前的回合将自动跳过。"
+          }
+        }
+      }
+    },
+    "lan.rejoin.detail" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Looking for your game on the local network."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在局域网中查找你的对局。"
+          }
+        }
+      }
+    },
+    "lan.rejoin.searching" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rejoining…"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在重新加入…"
           }
         }
       }
@@ -2379,6 +3340,7 @@
       }
     },
     "lan.subtitle" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2395,6 +3357,7 @@
       }
     },
     "lan.title" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2474,6 +3437,38 @@
         }
       }
     },
+    "medal.count.accessibility %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld medals"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld 枚勋章"
+          }
+        }
+      }
+    },
+    "mode.internet.subtitle" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Play through a configurable relay server"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "通过可配置的中继服务器联机"
+          }
+        }
+      }
+    },
     "mode.internet.title" : {
       "localizations" : {
         "en" : {
@@ -2522,6 +3517,22 @@
         }
       }
     },
+    "mode.multipeer.subtitle" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Connect over Bluetooth or peer-to-peer Wi-Fi"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "通过蓝牙或点对点 Wi‑Fi 连接"
+          }
+        }
+      }
+    },
     "mode.multipeer.title" : {
       "localizations" : {
         "en" : {
@@ -2534,6 +3545,70 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "MultipeerConnectivity 对战"
+          }
+        }
+      }
+    },
+    "multiplayer.connecting" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Connecting…"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在连接…"
+          }
+        }
+      }
+    },
+    "multiplayer.rejoin.detail" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Waiting for the host to make the saved room available."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在等待房主重新开放已保存的房间。"
+          }
+        }
+      }
+    },
+    "multiplayer.rejoin.searching" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Finding Your Match"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在查找对局"
+          }
+        }
+      }
+    },
+    "multiplayer.rooms.nearby" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nearby Rooms"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "附近房间"
           }
         }
       }
@@ -2618,6 +3693,22 @@
         }
       }
     },
+    "presence.context.internet" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Internet match"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "互联网对局"
+          }
+        }
+      }
+    },
     "presence.context.lan" : {
       "localizations" : {
         "en" : {
@@ -2630,6 +3721,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "局域网对战"
+          }
+        }
+      }
+    },
+    "presence.context.nearby" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nearby match"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "附近对局"
           }
         }
       }
@@ -2778,6 +3885,59 @@
         }
       }
     },
+    "room_closed" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This room has ended and can no longer be reconnected."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "该房间已结束，无法继续重连。"
+          }
+        }
+      }
+    },
+    "room_code_unsupported" : {
+
+    },
+    "room_not_found" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The room was not found or is no longer available."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "未找到该房间，或房间已不可用。"
+          }
+        }
+      }
+    },
+    "room_unavailable" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The room is full or has already started."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "房间已满或对局已经开始。"
+          }
+        }
+      }
+    },
     "settings.language" : {
       "localizations" : {
         "en" : {
@@ -2838,6 +3998,40 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "跟随系统"
+          }
+        }
+      }
+    },
+    "substitute_not_assigned" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The host continued without assigning you to a saved seat."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "房主继续了对局，但未将你分配到已保存的座位。"
+          }
+        }
+      }
+    },
+    "wrong_password" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The room password is incorrect."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "房间密码错误。"
           }
         }
       }

@@ -35,6 +35,13 @@ final class LANPeerConnection: @unchecked Sendable {
                 self.finish(error)
             case .cancelled:
                 self.finish(nil)
+            case let .waiting(error):
+                // The endpoint is currently unreachable (host gone, stale Bonjour
+                // result, network hiccup). NWConnection would otherwise sit here
+                // indefinitely, so treat it as a drop: cancel and report, letting the
+                // session's reconnect loop try again with a freshly resolved endpoint.
+                self.connection.cancel()
+                self.finish(error)
             default:
                 break
             }

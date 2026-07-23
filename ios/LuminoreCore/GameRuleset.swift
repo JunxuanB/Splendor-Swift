@@ -8,7 +8,7 @@ public protocol GameRuleset: Sendable {
     ) throws -> GameState
 
     func apply(_ action: GameAction, playerID: UUID, to state: inout GameState) throws
-    func setConnection(_ isConnected: Bool, playerID: UUID, in state: inout GameState)
+    func setConnection(_ isConnected: Bool, playerID: UUID, skipTurns: Bool, in state: inout GameState)
     func skipDisconnectedPlayers(in state: inout GameState)
 }
 
@@ -112,11 +112,22 @@ public struct StandardRuleset: GameRuleset {
         state = working
     }
 
-    public func setConnection(_ isConnected: Bool, playerID: UUID, in state: inout GameState) {
+    /// Update a seat's connection flag.
+    ///
+    /// - Parameter skipTurns: When `true` (default), a newly-disconnected current
+    ///   player is immediately skipped. Pass `false` to only record the flag —
+    ///   the caller then owns when turns advance (e.g. after a reconnect-grace
+    ///   window expires), so a brief network blip does not instantly skip a seat.
+    public func setConnection(
+        _ isConnected: Bool,
+        playerID: UUID,
+        skipTurns: Bool = true,
+        in state: inout GameState
+    ) {
         guard let index = state.players.firstIndex(where: { $0.id == playerID }) else { return }
         state.players[index].isConnected = isConnected
         state.revision += 1
-        if !isConnected, state.currentPlayer.id == playerID {
+        if skipTurns, !isConnected, state.currentPlayer.id == playerID {
             skipDisconnectedPlayers(in: &state)
         }
     }
@@ -346,6 +357,15 @@ private extension StandardRuleset {
         let winnerIDs = sorted.filter {
             $0.prestige == top?.prestige && $0.developmentCardCount == top?.developmentCardCount
         }.map(\.id)
+        let humanLoserCount = state.players.count {
+            $0.kind == .human && !winnerIDs.contains($0.id)
+        }
+        if humanLoserCount > 0 {
+            for index in state.players.indices
+                where state.players[index].kind == .human && winnerIDs.contains(state.players[index].id) {
+                state.players[index].medalCount += humanLoserCount
+            }
+        }
         var previous: PlayerState?
         var rank = 0
         let standings = sorted.enumerated().map { offset, player in
@@ -362,7 +382,7 @@ private extension StandardRuleset {
                 isWinner: winnerIDs.contains(player.id)
             )
         }
-        state.result = GameResult(standings: standings, winnerIDs: winnerIDs)
+        state.result = GameResult(standings: standings, winnerIDs: winnerIDs, finishedAt: Date())
     }
 }
 

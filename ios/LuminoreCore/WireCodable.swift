@@ -15,6 +15,7 @@ private enum WireKeys: String, CodingKey {
     case room
     case configuration
     case action
+    case animation
     case snapshot
     case message
     case paused
@@ -110,6 +111,7 @@ extension NetworkMessage {
         case enterConfiguration
         case startGame
         case action
+        case gameAnimation
         case gameState
         case returnToConfiguration
         case leave
@@ -131,6 +133,8 @@ extension NetworkMessage {
         case .enterConfiguration: self = .enterConfiguration
         case .startGame: self = .startGame
         case .action: self = .action(try container.decode(GameAction.self, forKey: .action))
+        case .gameAnimation:
+            self = .gameAnimation(try container.decode(GameAnimationEvent.self, forKey: .animation))
         case .gameState: self = .gameState(try container.decode(ClientGameSnapshot.self, forKey: .snapshot))
         case .returnToConfiguration: self = .returnToConfiguration
         case .leave: self = .leave
@@ -166,6 +170,9 @@ extension NetworkMessage {
         case let .action(action):
             try container.encode(Kind.action, forKey: .type)
             try container.encode(action, forKey: .action)
+        case let .gameAnimation(animation):
+            try container.encode(Kind.gameAnimation, forKey: .type)
+            try container.encode(animation, forKey: .animation)
         case let .gameState(snapshot):
             try container.encode(Kind.gameState, forKey: .type)
             try container.encode(snapshot, forKey: .snapshot)

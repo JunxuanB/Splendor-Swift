@@ -8,6 +8,8 @@ import SwiftUI
 struct ProfilesView: View {
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \AccountProfile.createdAt) private var profiles: [AccountProfile]
+    @Query private var medals: [MedalRecord]
+    @Query private var completedGames: [CompletedGameRecord]
     @AppStorage("activeProfileID") private var activeProfileID = ""
     @State private var isAddingProfile = false
 
@@ -66,6 +68,8 @@ struct ProfilesView: View {
         // surprise.
         guard profiles.count > offsets.count else { return }
         let deletedIDs = Set(offsets.map { profiles[$0].uuid.uuidString })
+        medals.filter { deletedIDs.contains($0.ownerKey) }.forEach(modelContext.delete)
+        completedGames.filter { deletedIDs.contains($0.ownerKey) }.forEach(modelContext.delete)
         for index in offsets { modelContext.delete(profiles[index]) }
         try? modelContext.save()
         if deletedIDs.contains(activeProfileID) {
