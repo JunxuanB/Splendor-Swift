@@ -17,6 +17,7 @@ private enum WireKeys: String, CodingKey {
     case action
     case snapshot
     case message
+    case paused
 }
 
 extension CardSource {
@@ -112,6 +113,8 @@ extension NetworkMessage {
         case gameState
         case returnToConfiguration
         case leave
+        case setPaused
+        case sessionSuspended
         case error
         case ping
     }
@@ -131,6 +134,8 @@ extension NetworkMessage {
         case .gameState: self = .gameState(try container.decode(ClientGameSnapshot.self, forKey: .snapshot))
         case .returnToConfiguration: self = .returnToConfiguration
         case .leave: self = .leave
+        case .setPaused: self = .setPaused(try container.decode(Bool.self, forKey: .paused))
+        case .sessionSuspended: self = .sessionSuspended
         case .error: self = .error(try container.decode(String.self, forKey: .message))
         case .ping: self = .ping
         }
@@ -168,6 +173,11 @@ extension NetworkMessage {
             try container.encode(Kind.returnToConfiguration, forKey: .type)
         case .leave:
             try container.encode(Kind.leave, forKey: .type)
+        case let .setPaused(paused):
+            try container.encode(Kind.setPaused, forKey: .type)
+            try container.encode(paused, forKey: .paused)
+        case .sessionSuspended:
+            try container.encode(Kind.sessionSuspended, forKey: .type)
         case let .error(message):
             try container.encode(Kind.error, forKey: .type)
             try container.encode(message, forKey: .message)

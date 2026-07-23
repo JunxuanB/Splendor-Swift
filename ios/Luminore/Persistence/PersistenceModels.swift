@@ -57,39 +57,59 @@ final class CompletedGameRecord {
 enum PersistenceController {
     static let cloudContainerIdentifier = "iCloud.com.junxuanb.Luminore"
 
+    // CloudKit-mirrored models: account identity, medals, history, presence.
+    private static let cloudSchema = Schema([
+        AccountProfile.self, MedalRecord.self, CompletedGameRecord.self, PresenceLease.self
+    ])
+    // Local-only models: in-progress/saved matches. Large state blobs and no
+    // cross-device resume, so these deliberately never mirror to CloudKit.
+    private static let localSchema = Schema([SavedGameRecord.self, ActiveMatchRecord.self])
+    private static let fullSchema = Schema([
+        AccountProfile.self, MedalRecord.self, CompletedGameRecord.self, PresenceLease.self,
+        SavedGameRecord.self, ActiveMatchRecord.self
+    ])
+
     static func makeContainer() -> ModelContainer {
-        let schema = Schema([AccountProfile.self, MedalRecord.self, CompletedGameRecord.self, PresenceLease.self])
         if ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil {
             // `.none` is essential: ModelConfiguration defaults cloudKitDatabase to
             // `.automatic`, which — because the app carries a CloudKit entitlement —
             // makes even an in-memory (/dev/null) store spin up CloudKit mirroring
             // and crash under tests. Unit tests must stay fully local.
-            let memory = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true, cloudKitDatabase: .none)
+            let memory = ModelConfiguration(schema: fullSchema, isStoredInMemoryOnly: true, cloudKitDatabase: .none)
             do {
-                return try ModelContainer(for: schema, configurations: [memory])
+                return try ModelContainer(for: fullSchema, configurations: [memory])
             } catch {
                 fatalError("Unable to create Luminore test store: \(error)")
             }
         }
         let storeURL = URL.applicationSupportDirectory.appending(path: "Luminore.store")
+        let localStoreURL = URL.applicationSupportDirectory.appending(path: "LuminoreLocal.store")
         try? FileManager.default.createDirectory(
             at: storeURL.deletingLastPathComponent(),
             withIntermediateDirectories: true
         )
+        // The saved/active-match store is always a plain local store, paired with
+        // whichever primary store (cloud or local fallback) we can bring up.
+        let resume = ModelConfiguration(
+            "LuminoreLocal",
+            schema: localSchema,
+            url: localStoreURL,
+            cloudKitDatabase: .none
+        )
         do {
             let cloud = ModelConfiguration(
                 "Luminore",
-                schema: schema,
+                schema: cloudSchema,
                 url: storeURL,
                 cloudKitDatabase: .private(cloudContainerIdentifier)
             )
-            return try ModelContainer(for: schema, configurations: [cloud])
+            return try ModelContainer(for: fullSchema, configurations: [cloud, resume])
         } catch {
             // The app remains usable when a device has no iCloud account. Data
             // stays local and CloudKit is retried on a later clean launch.
-            let local = ModelConfiguration("Luminore", schema: schema, url: storeURL)
+            let local = ModelConfiguration("Luminore", schema: cloudSchema, url: storeURL)
             do {
-                return try ModelContainer(for: schema, configurations: [local])
+                return try ModelContainer(for: fullSchema, configurations: [local, resume])
             } catch {
                 fatalError("Unable to create Luminore data store: \(error)")
             }

@@ -4,6 +4,7 @@ import SwiftUI
 struct GameBoardView: View {
     @ObservedObject var session: LANSessionService
     let onExit: () -> Void
+    let onSaveAndSuspend: () -> Void
 
     @State private var opponentIndex = 0
     @State private var selectedGems: [GemColor: Int] = [:]
@@ -29,6 +30,8 @@ struct GameBoardView: View {
                 deadline: session.turnDeadline,
                 hasTimer: snapshot?.configuration.turnDurationSeconds != nil,
                 gracePeriodEnabled: snapshot?.configuration.turnGracePeriodEnabled == true,
+                canPause: session.isHost && !session.isPaused,
+                onPause: { session.pauseGame() },
                 onExit: { isShowingExitConfirmation = true }
             )
 
@@ -129,6 +132,23 @@ struct GameBoardView: View {
                 GracePeriodBorder(deadline: deadline)
             }
         }
+        .overlay {
+            if session.isPaused {
+                PausedCoverView(
+                    isHost: session.isHost,
+                    isAwaitingAssignment: session.isAwaitingResumeAssignment,
+                    participants: session.room?.participants ?? [],
+                    pendingSubstitutes: session.pendingSubstitutes,
+                    localID: session.localID,
+                    onResume: { session.resumeGame() },
+                    onSaveAndSuspend: onSaveAndSuspend,
+                    onAssign: { session.assignSubstitute(seatID: $0, substituteID: $1) },
+                    onContinueResumed: { session.continueResumedGame() }
+                )
+                .transition(.opacity)
+            }
+        }
+        .animation(.easeInOut(duration: 0.2), value: session.isPaused)
         .navigationBarBackButtonHidden(true)
         .toolbar(.hidden, for: .navigationBar)
         .alert("game.exit.title", isPresented: $isShowingExitConfirmation) {

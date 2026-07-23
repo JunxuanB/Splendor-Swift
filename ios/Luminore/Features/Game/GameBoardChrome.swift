@@ -5,6 +5,8 @@ struct GameNavigationBar: View {
     let deadline: Date?
     let hasTimer: Bool
     let gracePeriodEnabled: Bool
+    let canPause: Bool
+    let onPause: () -> Void
     let onExit: () -> Void
 
     var body: some View {
@@ -31,9 +33,18 @@ struct GameNavigationBar: View {
                 .fixedSize()
                 .frame(maxWidth: .infinity, alignment: .center)
 
-            Button("game.exit", role: .destructive, action: onExit)
-                .font(.body)
-                .frame(maxWidth: .infinity, alignment: .trailing)
+            HStack(spacing: 14) {
+                Spacer(minLength: 0)
+                if canPause {
+                    Button(action: onPause) {
+                        Image(systemName: "pause.circle")
+                    }
+                    .accessibilityLabel(Text("game.pause.accessibility"))
+                }
+                Button("game.exit", role: .destructive, action: onExit)
+            }
+            .font(.body)
+            .frame(maxWidth: .infinity, alignment: .trailing)
         }
         .frame(height: 44)
         .frame(maxWidth: .infinity)

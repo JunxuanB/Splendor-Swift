@@ -161,6 +161,23 @@ public struct PlayerState: Identifiable, Codable, Equatable, Sendable {
         Dictionary(grouping: purchasedCards, by: \DevelopmentCard.bonus)
             .mapValues(\.count)
     }
+
+    /// Returns a copy of this seat rebound to a different account identity while
+    /// preserving all in-game progress (tokens, cards, nobles). Used when resuming a
+    /// saved match and a substitute takes over an absent player's seat.
+    public func reseated(as newID: UUID, nickname newNickname: String) -> PlayerState {
+        var copy = PlayerState(participant: Participant(
+            id: newID,
+            nickname: newNickname,
+            kind: kind,
+            isConnected: true
+        ))
+        copy.tokens = tokens
+        copy.purchasedCards = purchasedCards
+        copy.reservedCards = reservedCards
+        copy.nobles = nobles
+        return copy
+    }
 }
 
 public enum MatchStatus: String, Codable, Sendable {

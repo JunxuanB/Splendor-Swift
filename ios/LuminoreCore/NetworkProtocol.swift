@@ -113,6 +113,14 @@ public enum NetworkMessage: Codable, Equatable, Sendable {
     case gameState(ClientGameSnapshot)
     case returnToConfiguration
     case leave
+    /// Host → clients: the match was paused (`true`) or resumed (`false`) by the host.
+    /// Carried as a standalone control signal rather than on the snapshot so it can
+    /// ride any transport unchanged and does not perturb game-state versioning.
+    case setPaused(Bool)
+    /// Host → clients: the host saved the whole match and is stepping away. Clients
+    /// keep their local rejoin record and show a "match saved" notice rather than a
+    /// hard disconnect error.
+    case sessionSuspended
     case error(String)
     case ping
 }

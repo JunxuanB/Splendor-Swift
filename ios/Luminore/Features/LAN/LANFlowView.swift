@@ -4,96 +4,211 @@ import SwiftUI
 
 struct LANFlowView: View {
     let profile: AccountProfile
+    let autoResume: Bool
     @StateObject private var session: LANSessionService
     @StateObject private var presence = PresenceCoordinator()
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.scenePhase) private var scenePhase
     @State private var presenceConflict: PresenceCoordinator.Conflict?
+    @State private var didAttemptAutoResume = false
+    @State private var rejoinRoomID: UUID?
 
-    init(profile: AccountProfile) {
+    init(profile: AccountProfile, autoResume: Bool = false) {
         self.profile = profile
+        self.autoResume = autoResume
         _session = StateObject(wrappedValue: LANSessionService(localID: profile.uuid, nickname: profile.nickname))
     }
 
-    var body: some View {
-        Group {
-            switch session.phase {
-            case .menu:
+    @ViewBuilder private var phaseContent: some View {
+        switch session.phase {
+        case .menu:
+            if let rejoinRoomID {
+                RejoinView(session: session, roomID: rejoinRoomID)
+            } else {
                 LANMenuView(session: session)
-            case .connecting:
-                ProgressView("lan.connecting")
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-            case .lobby:
-                LobbyView(session: session)
-            case .configuration:
-                ConfigurationView(session: session)
-            case .game:
-                GameBoardView(session: session) {
+            }
+        case .connecting:
+            ProgressView("lan.connecting")
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+        case .lobby:
+            LobbyView(session: session)
+        case .configuration:
+            ConfigurationView(session: session)
+        case .game:
+            GameBoardView(
+                session: session,
+                onExit: {
+                    clearActiveMatch(includeSaved: true)
                     session.leave()
                     dismiss()
+                },
+                onSaveAndSuspend: {
+                    session.saveAndSuspend(context: modelContext)
                 }
-            case .results:
-                ResultView(session: session)
-            case .reconnecting:
-                ReconnectingView(session: session)
-            case .ended:
-                ContentUnavailableView(
-                    "lan.sessionEnded",
-                    systemImage: "wifi.exclamationmark",
-                    description: Text("lan.sessionEnded.detail")
-                )
-            }
+            )
+        case .results:
+            ResultView(session: session)
+        case .reconnecting:
+            ReconnectingView(session: session)
+        case .ended:
+            ContentUnavailableView(
+                "lan.sessionEnded",
+                systemImage: "wifi.exclamationmark",
+                description: Text("lan.sessionEnded.detail")
+            )
         }
-        .navigationBarBackButtonHidden(session.phase != .menu)
-        .toolbar {
-            if session.phase != .menu {
-                ToolbarItem(placement: .topBarLeading) {
-                    Button("common.leave", role: .destructive) {
-                        session.leave()
-                        dismiss()
+    }
+
+    var body: some View {
+        withLifecycle(withAlerts(withChrome(phaseContent)))
+    }
+
+    private func withChrome<V: View>(_ content: V) -> some View {
+        content
+            .navigationBarBackButtonHidden(session.phase != .menu)
+            .toolbar {
+                if session.phase != .menu {
+                    ToolbarItem(placement: .topBarLeading) {
+                        Button("common.leave", role: .destructive) {
+                            clearActiveMatch(includeSaved: true)
+                            session.leave()
+                            dismiss()
+                        }
                     }
                 }
             }
-        }
-        .alert("common.error", isPresented: Binding(
-            get: { session.presentedError != nil },
-            set: { if !$0 { session.presentedError = nil } }
-        )) {
-            Button("common.ok") { session.presentedError = nil }
-        } message: {
-            Text(session.presentedError ?? "")
-        }
-        .alert("presence.takeover.title", isPresented: Binding(
-            get: { presenceConflict != nil },
-            set: { if !$0 { presenceConflict = nil } }
-        ), presenting: presenceConflict) { _ in
-            Button("presence.takeover.confirm") { presenceConflict = nil }
-            Button("common.leave", role: .cancel) {
-                presenceConflict = nil
-                session.leave()
+    }
+
+    private func withAlerts<V: View>(_ content: V) -> some View {
+        content
+            .alert("common.error", isPresented: Binding(
+                get: { session.presentedError != nil },
+                set: { if !$0 { session.presentedError = nil } }
+            )) {
+                Button("common.ok") { session.presentedError = nil }
+            } message: {
+                Text(session.presentedError ?? "")
+            }
+            .alert("presence.takeover.title", isPresented: Binding(
+                get: { presenceConflict != nil },
+                set: { if !$0 { presenceConflict = nil } }
+            ), presenting: presenceConflict) { _ in
+                Button("presence.takeover.confirm") { presenceConflict = nil }
+                Button("common.leave", role: .cancel) {
+                    presenceConflict = nil
+                    session.leave()
+                    presence.release()
+                    dismiss()
+                }
+            } message: { conflict in
+                Text("presence.takeover.message \(conflict.deviceName)")
+            }
+            .alert("presence.takenOver.title", isPresented: $presence.wasTakenOver) {
+                Button("common.ok") {
+                    session.leave()
+                    dismiss()
+                }
+            } message: {
+                Text("presence.takenOver.message")
+            }
+    }
+
+    private func withLifecycle<V: View>(_ content: V) -> some View {
+        content
+            .onAppear {
+                presence.configure(modelContext)
+                session.updateNickname(profile.nickname)
+                startAutoResumeIfNeeded()
+            }
+            .onChange(of: session.phase) { old, new in handlePhaseChange(from: old, to: new) }
+            .onChange(of: session.game?.revision) { _, _ in syncActiveMatch() }
+            .onChange(of: scenePhase) { _, new in
+                if new == .active { session.applicationDidBecomeActive() }
+            }
+            .onChange(of: session.wasSuspended) { _, suspended in
+                // A graceful host suspend (ours or received) returns everyone home
+                // while keeping the rejoin record intact.
+                if suspended { dismiss() }
+            }
+            .onDisappear {
+                if session.phase == .menu { session.leave() }
                 presence.release()
-                dismiss()
             }
-        } message: { conflict in
-            Text("presence.takeover.message \(conflict.deviceName)")
-        }
-        .alert("presence.takenOver.title", isPresented: $presence.wasTakenOver) {
-            Button("common.ok") {
-                session.leave()
-                dismiss()
+    }
+
+    private func startAutoResumeIfNeeded() {
+        guard autoResume, !didAttemptAutoResume, session.phase == .menu else { return }
+        didAttemptAutoResume = true
+        let ownerKey = profile.uuid.uuidString
+        guard let active = try? modelContext.fetch(
+            FetchDescriptor<ActiveMatchRecord>(predicate: #Predicate { $0.ownerKey == ownerKey })
+        ).first else { return }
+        if active.wasHost {
+            if let saved = try? modelContext.fetch(
+                FetchDescriptor<SavedGameRecord>(predicate: #Predicate { $0.ownerKey == ownerKey })
+            ).first {
+                session.resumeSavedGame(saved)
+            } else {
+                // Host record with no saved state to reload — stale, drop it.
+                clearActiveMatch(includeSaved: false)
             }
-        } message: {
-            Text("presence.takenOver.message")
+        } else {
+            rejoinRoomID = active.roomID
         }
-        .onAppear {
-            presence.configure(modelContext)
-            session.updateNickname(profile.nickname)
+    }
+
+    /// Upsert the local "match in progress" marker as snapshots arrive; clear it when
+    /// the match finishes.
+    private func syncActiveMatch() {
+        guard let game = session.game, let room = session.room, session.phase == .game else { return }
+        if game.status == .finished {
+            clearActiveMatch(includeSaved: true)
+            return
         }
-        .onChange(of: session.phase) { old, new in handlePhaseChange(from: old, to: new) }
-        .onDisappear {
-            if session.phase == .menu { session.leave() }
-            presence.release()
+        let ownerKey = profile.uuid.uuidString
+        let existing = try? modelContext.fetch(
+            FetchDescriptor<ActiveMatchRecord>(predicate: #Predicate { $0.ownerKey == ownerKey })
+        )
+        let record: ActiveMatchRecord
+        if let found = existing?.first {
+            record = found
+        } else {
+            record = ActiveMatchRecord(
+                ownerKey: ownerKey,
+                gameID: game.gameID,
+                roomID: room.descriptor.id,
+                roomName: room.descriptor.name,
+                modeRawValue: game.configuration.mode.rawValue,
+                myParticipantID: profile.uuid,
+                wasHost: session.isHost
+            )
+            modelContext.insert(record)
         }
+        record.gameID = game.gameID
+        record.roomID = room.descriptor.id
+        record.roomName = room.descriptor.name
+        record.modeRawValue = game.configuration.mode.rawValue
+        record.wasHost = session.isHost
+        record.lastKnownIsMyTurn = game.currentPlayerID == profile.uuid
+        record.lastKnownStatusRaw = game.status.rawValue
+        record.updatedAt = Date()
+        try? modelContext.save()
+    }
+
+    private func clearActiveMatch(includeSaved: Bool) {
+        let ownerKey = profile.uuid.uuidString
+        if let actives = try? modelContext.fetch(
+            FetchDescriptor<ActiveMatchRecord>(predicate: #Predicate { $0.ownerKey == ownerKey })
+        ) {
+            actives.forEach(modelContext.delete)
+        }
+        if includeSaved, let saves = try? modelContext.fetch(
+            FetchDescriptor<SavedGameRecord>(predicate: #Predicate { $0.ownerKey == ownerKey })
+        ) {
+            saves.forEach(modelContext.delete)
+        }
+        try? modelContext.save()
     }
 
     /// Claim the presence lease when a match becomes active and release it when the
@@ -503,5 +618,45 @@ private struct ReconnectingView: View {
                 .foregroundStyle(.secondary).multilineTextAlignment(.center)
         }
         .padding(32)
+    }
+}
+
+/// Shown when returning to an in-progress match from the home screen: browse the LAN
+/// for the saved room id and rejoin as soon as the host is discovered.
+private struct RejoinView: View {
+    @ObservedObject var session: LANSessionService
+    let roomID: UUID
+    @StateObject private var browser = LANRoomBrowser()
+    @State private var password = ""
+    @State private var lockedRoom: DiscoveredLANRoom?
+
+    var body: some View {
+        VStack(spacing: 18) {
+            ProgressView().controlSize(.large)
+            Text("lan.rejoin.searching").font(.title2.bold())
+            Text("lan.rejoin.detail")
+                .foregroundStyle(.secondary).multilineTextAlignment(.center)
+        }
+        .padding(32)
+        .onAppear { browser.start() }
+        .onDisappear { browser.stop() }
+        .onChange(of: browser.rooms) { _, rooms in
+            guard session.phase == .menu, lockedRoom == nil,
+                  let room = rooms.first(where: { $0.descriptor.id == roomID })
+            else { return }
+            if room.descriptor.isPasswordProtected {
+                lockedRoom = room
+            } else {
+                session.join(room, password: "")
+            }
+        }
+        .alert("lan.password.title", isPresented: Binding(
+            get: { lockedRoom != nil },
+            set: { if !$0 { lockedRoom = nil; password = "" } }
+        )) {
+            SecureField("lan.room.password", text: $password)
+            Button("lan.join") { if let lockedRoom { session.join(lockedRoom, password: password) } }
+            Button("common.cancel", role: .cancel) { lockedRoom = nil }
+        }
     }
 }

@@ -9,7 +9,10 @@ final class PersistenceModelsTests: XCTestCase {
     // once in one process (here the test host app already owns one), so we create
     // exactly one and give each test an isolated child context inside it.
     private static let sharedContainer: ModelContainer = {
-        let schema = Schema([AccountProfile.self, MedalRecord.self, CompletedGameRecord.self, PresenceLease.self])
+        let schema = Schema([
+            AccountProfile.self, MedalRecord.self, CompletedGameRecord.self, PresenceLease.self,
+            SavedGameRecord.self, ActiveMatchRecord.self
+        ])
         // cloudKitDatabase: .none keeps the in-memory store from attaching CloudKit
         // mirroring (which the app's entitlement would otherwise trigger and crash).
         let configuration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true, cloudKitDatabase: .none)
@@ -24,8 +27,52 @@ final class PersistenceModelsTests: XCTestCase {
         try context.delete(model: MedalRecord.self)
         try context.delete(model: CompletedGameRecord.self)
         try context.delete(model: PresenceLease.self)
+        try context.delete(model: SavedGameRecord.self)
+        try context.delete(model: ActiveMatchRecord.self)
         try context.save()
         return context
+    }
+
+    func testSavedAndActiveMatchRecordsPersistAndFilterByOwnerKey() throws {
+        let context = try makeContext()
+        let ownerKey = UUID().uuidString
+        let gameID = UUID()
+        let roomID = UUID()
+
+        context.insert(SavedGameRecord(
+            ownerKey: ownerKey,
+            gameID: gameID,
+            roomID: roomID,
+            roomName: "Saturday Night",
+            modeRawValue: "standard",
+            statePayload: Data([1, 2, 3]),
+            sessionPayload: Data([4, 5])
+        ))
+        context.insert(ActiveMatchRecord(
+            ownerKey: ownerKey,
+            gameID: gameID,
+            roomID: roomID,
+            roomName: "Saturday Night",
+            modeRawValue: "standard",
+            myParticipantID: UUID(),
+            wasHost: true,
+            lastKnownIsMyTurn: true
+        ))
+        try context.save()
+
+        // ownerKey is a String, so it is safe to use in a #Predicate (unlike UUID).
+        let saved = try context.fetch(
+            FetchDescriptor<SavedGameRecord>(predicate: #Predicate { $0.ownerKey == ownerKey })
+        )
+        let active = try context.fetch(
+            FetchDescriptor<ActiveMatchRecord>(predicate: #Predicate { $0.ownerKey == ownerKey })
+        )
+        XCTAssertEqual(saved.count, 1)
+        XCTAssertEqual(saved.first?.roomID, roomID)
+        XCTAssertEqual(saved.first?.statePayload, Data([1, 2, 3]))
+        XCTAssertEqual(active.count, 1)
+        XCTAssertEqual(active.first?.wasHost, true)
+        XCTAssertEqual(active.first?.lastKnownIsMyTurn, true)
     }
 
     func testAccountAndPlaceholderRecordsPersistInMemory() throws {

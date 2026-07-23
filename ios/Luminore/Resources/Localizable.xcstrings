@@ -898,6 +898,102 @@
         }
       }
     },
+    "game.pause.accessibility" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Pause game" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "暂停游戏" } }
+      }
+    },
+    "game.paused.title" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Game Paused" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "游戏已暂停" } }
+      }
+    },
+    "game.paused.host.hint" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "You paused the match. Resume when everyone is ready." } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "你暂停了对局，大家准备好后继续。" } }
+      }
+    },
+    "game.paused.client.hint" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "The host paused the match." } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "房主暂停了对局。" } }
+      }
+    },
+    "game.paused.resume" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Resume" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "继续游戏" } }
+      }
+    },
+    "game.paused.saveExit" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Save & Exit" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "保存并退出" } }
+      }
+    },
+    "game.resume.assign.title" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Assign Seats" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "分配座位" } }
+      }
+    },
+    "game.resume.assign.hint" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Returning players reclaim their seats automatically. Assign an empty seat to a substitute, or leave it empty." } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "原玩家会自动坐回原位。可把空座位指派给替补，或留空。" } }
+      }
+    },
+    "game.resume.continue" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Continue" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "继续对局" } }
+      }
+    },
+    "game.resume.seat.online" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Online" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "在线" } }
+      }
+    },
+    "game.resume.seat.waiting" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Waiting" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "等待中" } }
+      }
+    },
+    "game.resume.seat.assign" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Assign substitute" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "指派替补" } }
+      }
+    },
+    "home.resume.title" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Resume match" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "重新加入对局" } }
+      }
+    },
+    "home.resume.yourTurn" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Your turn" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "轮到你" } }
+      }
+    },
+    "lan.rejoin.searching" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Rejoining…" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "正在重新加入…" } }
+      }
+    },
+    "lan.rejoin.detail" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Looking for your game on the local network." } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "正在局域网中查找你的对局。" } }
+      }
+    },
     "game.exit.message" : {
       "localizations" : {
         "en" : {

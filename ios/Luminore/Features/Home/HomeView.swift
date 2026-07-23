@@ -1,7 +1,19 @@
+import SwiftData
 import SwiftUI
 
 struct HomeView: View {
     let profile: AccountProfile
+    @Query private var activeMatches: [ActiveMatchRecord]
+
+    init(profile: AccountProfile) {
+        self.profile = profile
+        let key = profile.uuid.uuidString
+        _activeMatches = Query(
+            filter: #Predicate<ActiveMatchRecord> { $0.ownerKey == key },
+            sort: \.updatedAt,
+            order: .reverse
+        )
+    }
 
     var body: some View {
         NavigationStack {
@@ -24,6 +36,15 @@ struct HomeView: View {
                                 .padding(8)
                         }
                         .accessibilityLabel(Text("account.title"))
+                    }
+
+                    if let active = activeMatches.first {
+                        NavigationLink {
+                            LANFlowView(profile: profile, autoResume: true)
+                        } label: {
+                            ResumeMatchCard(record: active)
+                        }
+                        .buttonStyle(.plain)
                     }
 
                     VStack(alignment: .leading, spacing: 12) {
@@ -59,6 +80,36 @@ struct HomeView: View {
             .background(Color(.systemGroupedBackground))
             .navigationBarHidden(true)
         }
+    }
+}
+
+private struct ResumeMatchCard: View {
+    let record: ActiveMatchRecord
+
+    var body: some View {
+        HStack(spacing: 16) {
+            Image(systemName: "arrow.clockwise.circle.fill")
+                .font(.title2.bold())
+                .foregroundStyle(.orange)
+                .frame(width: 48, height: 48)
+                .background(Color.orange.opacity(0.14), in: RoundedRectangle(cornerRadius: 13))
+            VStack(alignment: .leading, spacing: 4) {
+                Text("home.resume.title").font(.headline)
+                Text(verbatim: record.roomName).font(.subheadline).foregroundStyle(.secondary)
+            }
+            Spacer()
+            if record.lastKnownIsMyTurn {
+                Text("home.resume.yourTurn")
+                    .font(.caption.bold())
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(Color.orange.opacity(0.18), in: Capsule())
+                    .foregroundStyle(.orange)
+            }
+            Image(systemName: "chevron.right").foregroundStyle(.tertiary)
+        }
+        .padding(16)
+        .background(.background, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
     }
 }
 

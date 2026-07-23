@@ -62,6 +62,25 @@ final class NetworkProtocolTests: XCTestCase {
         XCTAssertEqual(decoded, request)
     }
 
+    func testSetPausedMessageRoundTrips() throws {
+        for paused in [true, false] {
+            let envelope = WireEnvelope(
+                roomID: UUID(),
+                senderID: UUID(),
+                sequence: 3,
+                payload: .setPaused(paused)
+            )
+            let decoded = try JSONDecoder().decode(WireEnvelope.self, from: JSONEncoder().encode(envelope))
+            XCTAssertEqual(decoded.payload, .setPaused(paused))
+        }
+    }
+
+    func testSessionSuspendedMessageRoundTrips() throws {
+        let envelope = WireEnvelope(roomID: UUID(), senderID: UUID(), sequence: 4, payload: .sessionSuspended)
+        let decoded = try JSONDecoder().decode(WireEnvelope.self, from: JSONEncoder().encode(envelope))
+        XCTAssertEqual(decoded.payload, .sessionSuspended)
+    }
+
     func testFrameRejectsOversizedPayload() {
         XCTAssertThrowsError(try LengthPrefixedFramer.frame(Data(count: LengthPrefixedFramer.maximumFrameSize + 1)))
     }
