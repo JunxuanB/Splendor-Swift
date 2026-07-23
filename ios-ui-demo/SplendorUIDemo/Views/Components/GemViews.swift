@@ -3,12 +3,12 @@ import SwiftUI
 extension GemColor {
     var tint: Color {
         switch self {
-        case .diamond: Color.gray.opacity(0.22)
-        case .sapphire: .blue
-        case .emerald: .green
-        case .ruby: .red
-        case .onyx: Color.black.opacity(0.78)
-        case .gold: .yellow
+        case .diamond: Color(red: 0.90, green: 0.92, blue: 0.96)
+        case .sapphire: Color(red: 0.20, green: 0.48, blue: 0.86)
+        case .emerald: Color(red: 0.14, green: 0.62, blue: 0.45)
+        case .ruby: Color(red: 0.84, green: 0.26, blue: 0.32)
+        case .onyx: Color(red: 0.22, green: 0.24, blue: 0.30)
+        case .gold: Color(red: 0.95, green: 0.73, blue: 0.24)
         }
     }
 
@@ -43,9 +43,9 @@ struct GemTokenView: View {
     var body: some View {
         ZStack {
             Circle()
-                .fill(gem.tint.gradient)
+                .fill(gem.tint)
             Circle()
-                .strokeBorder(isSelected ? Color.accentColor : .primary.opacity(0.14), lineWidth: isSelected ? 4 : 1)
+                .strokeBorder(isSelected ? Color.accentColor : .black.opacity(0.10), lineWidth: isSelected ? 4 : 1)
 
             VStack(spacing: 0) {
                 Image(systemName: gem.iconName)
@@ -85,10 +85,10 @@ struct ResourceStackView: View {
         } else {
             ZStack(alignment: .bottomTrailing) {
                 RoundedRectangle(cornerRadius: compact ? 7 : 9, style: .continuous)
-                    .fill(gem.tint.gradient)
+                    .fill(gem.tint)
                     .overlay {
                         RoundedRectangle(cornerRadius: compact ? 7 : 9, style: .continuous)
-                            .strokeBorder(.primary.opacity(0.12))
+                            .strokeBorder(.black.opacity(0.10))
                     }
                     .frame(width: compact ? 31 : 38, height: compact ? 39 : 50)
                     .overlay {
@@ -123,7 +123,7 @@ struct CostBadge: View {
     var body: some View {
         Circle()
             .fill(gem.tint)
-            .overlay(Circle().strokeBorder(.primary.opacity(0.16)))
+            .overlay(Circle().strokeBorder(.black.opacity(0.10), lineWidth: 0.75))
             .overlay {
                 Text("\(value)")
                     .font(.system(size: size * 0.55, weight: .bold, design: .rounded))
@@ -164,19 +164,22 @@ struct NobleRequirementBadge: View {
     let value: Int
     var height: CGFloat = 16
 
+    private var cornerRadius: CGFloat { height * 0.30 }
+
     var body: some View {
-        RoundedRectangle(cornerRadius: height * 0.28, style: .continuous)
+        RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
             .fill(gem.tint)
             .overlay {
                 Text("\(value)")
-                    .font(.system(size: height * 0.62, weight: .bold, design: .rounded))
+                    .font(.system(size: height * 0.58, weight: .bold, design: .rounded))
+                    .minimumScaleFactor(0.6)
                     .foregroundStyle(gem.foreground)
             }
             .overlay {
-                RoundedRectangle(cornerRadius: height * 0.28, style: .continuous)
-                    .strokeBorder(.primary.opacity(0.14))
+                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                    .strokeBorder(.black.opacity(0.10), lineWidth: 0.75)
             }
-            .frame(width: height * 1.3, height: height)
+            .frame(width: height * 0.74, height: height)
             .accessibilityLabel("\(gem.displayName) \(value)")
     }
 }

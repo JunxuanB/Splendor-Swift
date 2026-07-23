@@ -75,10 +75,10 @@ struct OpponentCarousel: View {
         .padding(.horizontal, 9)
         .padding(.vertical, 7)
         .frame(maxWidth: .infinity)
-        .background(.background, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
         .overlay {
             RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .strokeBorder(.quaternary)
+                .strokeBorder(.primary.opacity(0.08))
         }
     }
 
@@ -183,43 +183,43 @@ struct NobleTileView: View {
     let noble: NobleTile
     var enlarged = false
 
+    private var cornerRadius: CGFloat { enlarged ? 24 : 13 }
+
     var body: some View {
-        VStack(spacing: enlarged ? 12 : 5) {
-            HStack {
+        VStack(spacing: 0) {
+            HStack(alignment: .firstTextBaseline) {
                 Image(systemName: "crown.fill")
-                    .font(enlarged ? .title2 : .caption)
-                    .foregroundStyle(.yellow)
+                    .font(enlarged ? .title3 : .caption)
+                    .foregroundStyle(Color(red: 0.86, green: 0.66, blue: 0.20))
+
                 Spacer()
+
                 Text("\(noble.prestige)")
-                    .font(enlarged ? .title.bold() : .subheadline.bold())
+                    .font(enlarged ? .system(size: 30, weight: .bold, design: .rounded) : .system(size: 16, weight: .bold, design: .rounded))
+                    .foregroundStyle(.secondary)
             }
 
-            HStack(spacing: enlarged ? 8 : 1) {
+            Spacer(minLength: enlarged ? 14 : 6)
+
+            HStack(spacing: enlarged ? 10 : 3) {
                 ForEach(requirements, id: \.key) { gem, value in
-                    NobleRequirementBadge(gem: gem, value: value, height: enlarged ? 30 : 14)
+                    NobleRequirementBadge(gem: gem, value: value, height: enlarged ? 40 : 21)
                 }
             }
-            .padding(.top, enlarged ? 8 : 1)
-
-            Spacer(minLength: 0)
+            .frame(maxWidth: .infinity, alignment: .center)
         }
-        .padding(enlarged ? 18 : 5)
+        .padding(enlarged ? 20 : 8)
         .foregroundStyle(.primary)
         .frame(maxWidth: .infinity)
         .aspectRatio(1, contentMode: .fit)
         .background(
-            LinearGradient(
-                colors: [Color.secondary.opacity(0.10), Color.purple.opacity(0.16)],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            ),
-            in: RoundedRectangle(cornerRadius: enlarged ? 22 : 12, style: .continuous)
+            Color(red: 0.48, green: 0.40, blue: 0.68).opacity(0.14),
+            in: RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
         )
         .overlay {
-            RoundedRectangle(cornerRadius: enlarged ? 22 : 12, style: .continuous)
-                .strokeBorder(.purple.opacity(0.25))
+            RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                .strokeBorder(Color(red: 0.48, green: 0.40, blue: 0.68).opacity(0.20), lineWidth: 1)
         }
-        .shadow(color: .black.opacity(enlarged ? 0.08 : 0.035), radius: enlarged ? 8 : 2, y: 1)
         .accessibilityElement(children: .combine)
         .accessibilityLabel("\(noble.name)，\(noble.prestige) 分")
         .accessibilityHint("轻点查看详情")
@@ -269,6 +269,8 @@ struct DevelopmentCardView: View {
     var enlarged = false
     var isPurchasable = false
 
+    private var cornerRadius: CGFloat { enlarged ? 22 : 12 }
+
     var body: some View {
         VStack(alignment: .leading, spacing: enlarged ? 12 : 5) {
             HStack(alignment: .top) {
@@ -295,29 +297,60 @@ struct DevelopmentCardView: View {
             maxHeight: enlarged ? 220 : 80,
             alignment: .leading
         )
-        .background(
-            LinearGradient(
-                colors: [card.bonus.tint.opacity(0.48), Color.secondary.opacity(0.10)],
-                startPoint: .topTrailing,
-                endPoint: .bottomLeading
-            ),
-            in: RoundedRectangle(cornerRadius: enlarged ? 22 : 12, style: .continuous)
-        )
-        .overlay {
-            RoundedRectangle(cornerRadius: enlarged ? 22 : 12, style: .continuous)
-                .strokeBorder(card.bonus.tint.opacity(0.42))
+        .background(alignment: .top) {
+            card.bonus.tint.opacity(0.20)
+                .frame(height: enlarged ? 110 : 30)
         }
+        .background(Color(.secondarySystemGroupedBackground))
+        .clipShape(shape)
         .overlay {
             if isPurchasable {
-                RoundedRectangle(cornerRadius: enlarged ? 22 : 12, style: .continuous)
-                    .strokeBorder(.green.opacity(0.72), lineWidth: enlarged ? 2 : 1.5)
+                ShimmerBorder(cornerRadius: cornerRadius, lineWidth: enlarged ? 2.5 : 1.75)
+            } else {
+                shape.strokeBorder(.primary.opacity(0.08), lineWidth: 1)
             }
         }
-        .shadow(color: .black.opacity(enlarged ? 0.08 : 0.04), radius: enlarged ? 8 : 2, y: 1)
         .accessibilityElement(children: .combine)
         .accessibilityLabel("等级 \(card.level) 发展卡，\(card.prestige) 分，奖励\(card.bonus.displayName)")
         .accessibilityValue(isPurchasable ? "当前可以购买" : "当前不可购买")
         .accessibilityHint("轻点选择购买或预留")
+    }
+
+    private var shape: RoundedRectangle {
+        RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+    }
+}
+
+/// A slowly rotating iridescent border used to highlight affordable cards.
+private struct ShimmerBorder: View {
+    var cornerRadius: CGFloat
+    var lineWidth: CGFloat = 2
+
+    private let colors: [Color] = [
+        Color(red: 0.40, green: 0.80, blue: 1.00),
+        Color(red: 0.60, green: 0.55, blue: 1.00),
+        Color(red: 0.90, green: 0.50, blue: 0.95),
+        Color(red: 1.00, green: 0.55, blue: 0.75),
+        Color(red: 1.00, green: 0.82, blue: 0.45),
+        Color(red: 0.50, green: 1.00, blue: 0.75),
+        Color(red: 0.40, green: 0.80, blue: 1.00),
+    ]
+
+    var body: some View {
+        TimelineView(.animation) { context in
+            let seconds = context.date.timeIntervalSinceReferenceDate
+            let angle = Angle.degrees((seconds * 70).truncatingRemainder(dividingBy: 360))
+            RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                .strokeBorder(
+                    AngularGradient(
+                        gradient: Gradient(colors: colors),
+                        center: .center,
+                        angle: angle
+                    ),
+                    lineWidth: lineWidth
+                )
+        }
+        .allowsHitTesting(false)
     }
 }
 
@@ -336,10 +369,10 @@ private struct DeckPileView: View {
         }
         .foregroundStyle(.secondary)
         .frame(width: 31, height: 78)
-        .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 9, style: .continuous))
+        .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 9, style: .continuous))
         .overlay {
             RoundedRectangle(cornerRadius: 9, style: .continuous)
-                .strokeBorder(.quaternary)
+                .strokeBorder(.primary.opacity(0.08))
         }
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("等级 \(level) 牌库，剩余 \(remaining) 张")

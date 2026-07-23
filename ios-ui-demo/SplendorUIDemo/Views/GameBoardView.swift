@@ -26,13 +26,7 @@ struct GameBoardView: View {
                 .padding(.vertical, roomy ? 9 : 5)
                 .frame(maxHeight: .infinity, alignment: .top)
             }
-            .background(
-                LinearGradient(
-                    colors: [Color.gray.opacity(0.075), Color.blue.opacity(0.025)],
-                    startPoint: .top,
-                    endPoint: .bottom
-                )
-            )
+            .background(Color(.systemGroupedBackground))
 
             PlayerInventoryBar(state: state)
         }
