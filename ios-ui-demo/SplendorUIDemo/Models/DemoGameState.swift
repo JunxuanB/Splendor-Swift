@@ -10,10 +10,15 @@ final class DemoGameState: ObservableObject {
     @Published var activeSheet: DemoSheet?
     @Published var feedbackMessage: String?
 
+    // Transient animation state (kept here, not in a nested ObservableObject,
+    // so every subview observing `state` republishes correctly).
+    @Published var flights: [Flight] = []
+    @Published var bursts: [Burst] = []
+
     let targetPrestige = 15
-    let playerPrestige = 7
-    let playerBonuses: [GemColor: Int]
-    let reservedCards: [DevelopmentCard]
+    @Published private(set) var playerPrestige = 7
+    @Published private(set) var playerBonuses: [GemColor: Int]
+    @Published private(set) var reservedCards: [DevelopmentCard]
     let opponents: [PlayerSnapshot]
     let opponentReservedCards: [String: [DevelopmentCard]]
     let nobles: [NobleTile]
@@ -92,13 +97,109 @@ final class DemoGameState: ObservableObject {
 
     func confirmGemSelection() {
         guard hasGemSelection else { return }
-        for (gem, amount) in selectedGems where bank[gem, default: 0] >= amount {
-            bank[gem, default: 0] -= amount
-            playerTokens[gem, default: 0] += amount
-        }
-        let amount = selectedGemTotal
+        let picks = selectedGems.filter { bank[$0.key, default: 0] >= $0.value }
+        let amount = picks.values.reduce(0, +)
         selectedGems.removeAll()
+        flyGems(picks)
         showFeedback("已拿取 \(amount) 枚宝石")
+    }
+
+    // MARK: - Animation orchestration
+
+    /// Send each selected gem flying from the bank into the player's stacks.
+    /// The gem leaves the bank immediately; the player count ticks up on landing.
+    func flyGems(_ picks: [GemColor: Int]) {
+        var index = 0
+        for (gem, amount) in picks {
+            for _ in 0..<amount {
+                guard bank[gem, default: 0] > 0 else { continue }
+                bank[gem, default: 0] -= 1
+                flights.append(
+                    Flight(
+                        kind: .gem(gem),
+                        from: .bankGem(gem),
+                        to: .playerStack(gem),
+                        delay: Double(index) * 0.08
+                    )
+                )
+                index += 1
+            }
+        }
+    }
+
+    func buy(_ card: DevelopmentCard) {
+        activeSheet = nil
+        showFeedback("已购买该发展卡（演示）")
+        // Let the sheet dismiss so the market anchor is on-screen and settled.
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.28) { [weak self] in
+            self?.flights.append(
+                Flight(kind: .cardBuy(card), from: .marketCard(card.id), to: .playerStack(card.bonus))
+            )
+        }
+    }
+
+    func reserve(_ card: DevelopmentCard) {
+        activeSheet = nil
+        showFeedback("已预留该发展卡（演示）")
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.28) { [weak self] in
+            self?.flights.append(
+                Flight(kind: .cardReserve(card), from: .marketCard(card.id), to: .reservedArea)
+            )
+        }
+    }
+
+    func gainNoble(_ noble: NobleTile) {
+        flights.append(
+            Flight(kind: .noble(noble), from: .nobleTile(noble.id), to: .scoreLabel)
+        )
+    }
+
+    /// Resolve a flight: mutate the underlying game data, spawn any burst, drop the ghost.
+    func land(_ flight: Flight) {
+        switch flight.kind {
+        case let .gem(gem):
+            playerTokens[gem, default: 0] += 1
+        case let .cardBuy(card):
+            playerBonuses[card.bonus, default: 0] += 1
+            if card.prestige > 0 {
+                playerPrestige += card.prestige
+                bursts.append(Burst(at: .scoreLabel))
+            }
+        case let .cardReserve(card):
+            reservedCards.append(card)
+        case let .noble(noble):
+            playerPrestige += noble.prestige
+            bursts.append(Burst(at: .scoreLabel))
+        }
+        flights.removeAll { $0.id == flight.id }
+    }
+
+    func endBurst(_ burst: Burst) {
+        bursts.removeAll { $0.id == burst.id }
+    }
+
+    // MARK: - Debug entry points (skip the sheet-dismiss delay)
+
+    func debugBuy() {
+        let card = market[2].first(where: { $0.prestige > 0 }) ?? market[2][0]
+        flights.append(
+            Flight(kind: .cardBuy(card), from: .marketCard(card.id), to: .playerStack(card.bonus))
+        )
+    }
+
+    func debugReserve() {
+        let card = market[0][0]
+        guard reservedCards.count < 3 else {
+            showFeedback("预留已满（演示）")
+            return
+        }
+        flights.append(
+            Flight(kind: .cardReserve(card), from: .marketCard(card.id), to: .reservedArea)
+        )
+    }
+
+    func sparkleScore() {
+        bursts.append(Burst(at: .scoreLabel))
     }
 
     func open(_ card: DevelopmentCard) {

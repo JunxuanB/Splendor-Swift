@@ -77,8 +77,13 @@ struct OpponentCarousel: View {
         .frame(maxWidth: .infinity)
         .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
         .overlay {
-            RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .strokeBorder(.primary.opacity(0.08))
+            // The acting opponent (林墨 in this demo) gets an iridescent border.
+            if opponent.id == state.opponents.first?.id {
+                ShimmerBorder(cornerRadius: 18, lineWidth: 2.5)
+            } else {
+                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    .strokeBorder(.primary.opacity(0.08))
+            }
         }
     }
 
@@ -127,6 +132,7 @@ struct GemBankSection: View {
                                 selectionCount: state.selectedGems[gem, default: 0],
                                 disabled: gem == .gold
                             )
+                            .flightAnchor(.bankGem(gem))
                             Text(gem.shortName)
                                 .font(.caption2)
                                 .foregroundStyle(.secondary)
@@ -173,6 +179,7 @@ struct NobleSection: View {
                     NobleTileView(noble: noble)
                 }
                 .buttonStyle(.plain)
+                .flightAnchor(.nobleTile(noble.id))
                 .frame(maxWidth: .infinity)
             }
         }
@@ -255,6 +262,7 @@ struct MarketSection: View {
                                 DevelopmentCardView(card: card, isPurchasable: state.canPurchase(card))
                             }
                             .buttonStyle(CardPressStyle())
+                            .flightAnchor(.marketCard(card.id))
                         }
                     }
                     .frame(maxWidth: .infinity)

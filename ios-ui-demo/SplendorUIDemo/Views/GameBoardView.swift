@@ -23,6 +23,7 @@ struct GameBoardView: View {
                     NobleSection(nobles: state.nobles, onSelect: state.open)
                         .padding(.vertical, roomy ? 2 : 0)
                     MarketSection(state: state)
+                    DebugAnimationBar(state: state)
                 }
                 .padding(.horizontal, 14)
                 .padding(.vertical, roomy ? 9 : 5)
@@ -31,6 +32,12 @@ struct GameBoardView: View {
             .background(Color(.systemGroupedBackground))
 
             PlayerInventoryBar(state: state)
+        }
+        .overlayPreferenceValue(AnchorKey.self) { anchors in
+            GeometryReader { proxy in
+                FlightLayer(state: state, anchors: anchors, proxy: proxy)
+            }
+            .allowsHitTesting(false)
         }
         .demoHideNavigationBar()
         .alert("退出演示对局？", isPresented: $isShowingExitConfirmation) {
@@ -97,6 +104,9 @@ private struct PlayerInventoryBar: View {
                     VStack(alignment: .leading, spacing: 0) {
                         Text("\(state.playerPrestige)")
                             .font(.title.bold().monospacedDigit())
+                            .contentTransition(.numericText())
+                            .popEffect(trigger: state.playerPrestige)
+                            .flightAnchor(.scoreLabel)
                         Text("总分")
                             .font(.caption2)
                             .foregroundStyle(.secondary)
@@ -106,13 +116,16 @@ private struct PlayerInventoryBar: View {
                         HStack(spacing: 2) {
                             Text("\(state.playerReservedCards) / 3")
                                 .font(.caption.bold().monospacedDigit())
+                                .contentTransition(.numericText())
                             Image(systemName: "chevron.up")
                                 .font(.system(size: 8, weight: .bold))
                         }
+                        .popEffect(trigger: state.playerReservedCards)
                         Text("预留")
                             .font(.caption2)
                             .foregroundStyle(.secondary)
                     }
+                    .flightAnchor(.reservedArea)
                 }
                 .frame(width: 54, alignment: .leading)
                 .contentShape(Rectangle())
@@ -131,6 +144,8 @@ private struct PlayerInventoryBar: View {
                         permanent: state.playerBonuses[gem, default: 0],
                         tokens: state.playerTokens[gem, default: 0]
                     )
+                    .popEffect(trigger: state.playerTokens[gem, default: 0] + state.playerBonuses[gem, default: 0])
+                    .flightAnchor(.playerStack(gem))
                     .frame(maxWidth: .infinity)
                 }
             }
@@ -190,13 +205,13 @@ private struct DetailSheet: View {
 
             HStack(spacing: 12) {
                 Button("预留") {
-                    state.performCardAction("已预留该发展卡（演示）")
+                    state.reserve(card)
                 }
                 .buttonStyle(.bordered)
                 .frame(maxWidth: .infinity)
 
                 Button("购买") {
-                    state.performCardAction("已购买该发展卡（演示）")
+                    state.buy(card)
                 }
                 .buttonStyle(.borderedProminent)
                 .frame(maxWidth: .infinity)
@@ -255,7 +270,7 @@ private struct DetailSheet: View {
 
                             if allowsPurchase {
                                 Button {
-                                    state.performCardAction("已购买预留的发展卡（演示）")
+                                    state.buy(card)
                                 } label: {
                                     Label("购买", systemImage: "cart.fill")
                                         .font(.caption.bold())
