@@ -7,6 +7,8 @@ struct GameBoardView: View {
 
     var body: some View {
         VStack(spacing: 0) {
+            CustomNavBar(title: "对局") { isShowingExitConfirmation = true }
+
             VictoryProgressHeader(current: state.playerPrestige, target: state.targetPrestige)
 
             Divider()
@@ -30,16 +32,7 @@ struct GameBoardView: View {
 
             PlayerInventoryBar(state: state)
         }
-        .navigationTitle("对局")
-        .demoInlineNavigationBar(showsBackground: true)
-        .demoHideBackButton()
-        .toolbar {
-            ToolbarItem(placement: .confirmationAction) {
-                Button("退出", role: .destructive) {
-                    isShowingExitConfirmation = true
-                }
-            }
-        }
+        .demoHideNavigationBar()
         .alert("退出演示对局？", isPresented: $isShowingExitConfirmation) {
             Button("取消", role: .cancel) {}
             Button("退出", role: .destructive) { dismiss() }
@@ -286,6 +279,71 @@ private struct DetailSheet: View {
     }
 }
 
+private struct CustomNavBar: View {
+    let title: String
+    var onExit: () -> Void
+
+    var body: some View {
+        HStack(spacing: 0) {
+            TurnCountdownView()
+                .frame(maxWidth: .infinity, alignment: .leading)
+
+            Text(title)
+                .font(.headline)
+                .fixedSize()
+                .frame(maxWidth: .infinity, alignment: .center)
+
+            Button("退出", role: .destructive, action: onExit)
+                .font(.body)
+                .frame(maxWidth: .infinity, alignment: .trailing)
+        }
+        .frame(height: 44)
+        .frame(maxWidth: .infinity)
+        .padding(.horizontal, 16)
+        .background {
+            Rectangle()
+                .fill(.bar)
+                .ignoresSafeArea(edges: .top)
+        }
+        .overlay(alignment: .bottom) { Divider() }
+    }
+}
+
+private struct TurnCountdownView: View {
+    var duration = 30
+    @State private var remaining = 30
+
+    private let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
+
+    private var isUrgent: Bool { remaining <= 5 }
+
+    var body: some View {
+        HStack(spacing: 5) {
+            Image(systemName: "timer")
+                .font(.footnote.weight(.semibold))
+            Text("\(remaining)")
+                .font(.title3.weight(.semibold).monospacedDigit())
+                .contentTransition(.numericText(countsDown: true))
+        }
+        .foregroundStyle(isUrgent ? Color.red : .primary)
+        .padding(.horizontal, isUrgent ? 8 : 0)
+        .padding(.vertical, 3)
+        .background(
+            isUrgent ? Color.red.opacity(0.14) : Color.clear,
+            in: Capsule()
+        )
+        .animation(.snappy, value: isUrgent)
+        .onReceive(timer) { _ in
+            withAnimation(.snappy) {
+                remaining = remaining > 1 ? remaining - 1 : duration
+            }
+        }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("操作倒计时")
+        .accessibilityValue("剩余 \(remaining) 秒")
+    }
+}
+
 private struct FeedbackToast: View {
     let message: String
 
@@ -317,9 +375,10 @@ private extension View {
     }
 
     @ViewBuilder
-    func demoHideBackButton() -> some View {
+    func demoHideNavigationBar() -> some View {
 #if os(iOS)
         navigationBarBackButtonHidden(true)
+            .toolbar(.hidden, for: .navigationBar)
 #else
         self
 #endif

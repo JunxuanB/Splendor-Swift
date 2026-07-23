@@ -75,9 +75,9 @@ struct OpponentCarousel: View {
         .padding(.horizontal, 9)
         .padding(.vertical, 7)
         .frame(maxWidth: .infinity)
-        .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
         .overlay {
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
                 .strokeBorder(.primary.opacity(0.08))
         }
     }
@@ -183,7 +183,7 @@ struct NobleTileView: View {
     let noble: NobleTile
     var enlarged = false
 
-    private var cornerRadius: CGFloat { enlarged ? 24 : 13 }
+    private var cornerRadius: CGFloat { enlarged ? 26 : 14 }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -269,7 +269,7 @@ struct DevelopmentCardView: View {
     var enlarged = false
     var isPurchasable = false
 
-    private var cornerRadius: CGFloat { enlarged ? 22 : 12 }
+    private var cornerRadius: CGFloat { enlarged ? 24 : 14 }
 
     var body: some View {
         VStack(alignment: .leading, spacing: enlarged ? 12 : 5) {
@@ -369,9 +369,9 @@ private struct DeckPileView: View {
         }
         .foregroundStyle(.secondary)
         .frame(width: 31, height: 78)
-        .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 9, style: .continuous))
+        .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 11, style: .continuous))
         .overlay {
-            RoundedRectangle(cornerRadius: 9, style: .continuous)
+            RoundedRectangle(cornerRadius: 11, style: .continuous)
                 .strokeBorder(.primary.opacity(0.08))
         }
         .accessibilityElement(children: .ignore)

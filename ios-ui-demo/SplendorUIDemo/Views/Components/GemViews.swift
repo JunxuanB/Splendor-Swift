@@ -1,14 +1,16 @@
 import SwiftUI
 
 extension GemColor {
+    /// Single source of truth for every gem color across the board — vivid,
+    /// modern jewel tones so bank tokens, cost badges and card bonuses all match.
     var tint: Color {
         switch self {
-        case .diamond: Color(red: 0.90, green: 0.92, blue: 0.96)
-        case .sapphire: Color(red: 0.20, green: 0.48, blue: 0.86)
-        case .emerald: Color(red: 0.14, green: 0.62, blue: 0.45)
-        case .ruby: Color(red: 0.84, green: 0.26, blue: 0.32)
-        case .onyx: Color(red: 0.22, green: 0.24, blue: 0.30)
-        case .gold: Color(red: 0.95, green: 0.73, blue: 0.24)
+        case .diamond: Color(red: 0.93, green: 0.95, blue: 0.99)
+        case .sapphire: Color(red: 0.11, green: 0.44, blue: 0.93)
+        case .emerald: Color(red: 0.05, green: 0.67, blue: 0.44)
+        case .ruby: Color(red: 0.88, green: 0.18, blue: 0.31)
+        case .onyx: Color(red: 0.20, green: 0.22, blue: 0.29)
+        case .gold: Color(red: 0.98, green: 0.72, blue: 0.16)
         }
     }
 
