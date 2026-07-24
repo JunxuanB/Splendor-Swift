@@ -198,6 +198,7 @@ struct GameBoardView: View {
                     player: player,
                     nobles: snapshot.availableNobles,
                     allowsActions: isLocalTurn,
+                    showsPurchaseHighlight: snapshot.configuration.affordableCardHighlightEnabled,
                     onReserve: {
                         guard isLocalTurn else { return }
                         prepareReserve(
@@ -222,7 +223,10 @@ struct GameBoardView: View {
             NobleDetailSheet(noble: noble)
         }
         .sheet(item: $reservedSheet) { request in
-            ReservedCardsSheet(request: request) { card in
+            ReservedCardsSheet(
+                request: request,
+                showsPurchaseHighlight: snapshot?.configuration.affordableCardHighlightEnabled ?? true
+            ) { card in
                 reservedSheet = nil
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
                     selectedCard = SelectedCard(card: card, source: .reserved(cardID: card.id))

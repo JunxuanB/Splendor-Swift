@@ -77,16 +77,19 @@ public struct GameConfiguration: Codable, Equatable, Sendable {
     public var targetPrestige: Int
     public var turnDurationSeconds: Int?
     public var turnGracePeriodEnabled: Bool
+    public var affordableCardHighlightEnabled: Bool
 
     public init(
         mode: GameMode = .standard,
         targetPrestige: Int = 15,
         turnDurationSeconds: Int? = 30,
-        turnGracePeriodEnabled: Bool = true
+        turnGracePeriodEnabled: Bool = true,
+        affordableCardHighlightEnabled: Bool = true
     ) {
         self.mode = mode
         self.targetPrestige = min(max(targetPrestige, 10), 30)
         self.turnGracePeriodEnabled = turnGracePeriodEnabled
+        self.affordableCardHighlightEnabled = affordableCardHighlightEnabled
         if let turnDurationSeconds {
             self.turnDurationSeconds = min(max(turnDurationSeconds, 10), 120)
         } else {
@@ -99,6 +102,7 @@ public struct GameConfiguration: Codable, Equatable, Sendable {
         case targetPrestige
         case turnDurationSeconds
         case turnGracePeriodEnabled
+        case affordableCardHighlightEnabled
     }
 
     public init(from decoder: Decoder) throws {
@@ -107,7 +111,11 @@ public struct GameConfiguration: Codable, Equatable, Sendable {
             mode: try container.decode(GameMode.self, forKey: .mode),
             targetPrestige: try container.decode(Int.self, forKey: .targetPrestige),
             turnDurationSeconds: try container.decodeIfPresent(Int.self, forKey: .turnDurationSeconds),
-            turnGracePeriodEnabled: try container.decodeIfPresent(Bool.self, forKey: .turnGracePeriodEnabled) ?? true
+            turnGracePeriodEnabled: try container.decodeIfPresent(Bool.self, forKey: .turnGracePeriodEnabled) ?? true,
+            affordableCardHighlightEnabled: try container.decodeIfPresent(
+                Bool.self,
+                forKey: .affordableCardHighlightEnabled
+            ) ?? true
         )
     }
 
@@ -117,6 +125,7 @@ public struct GameConfiguration: Codable, Equatable, Sendable {
         try container.encode(targetPrestige, forKey: .targetPrestige)
         try container.encodeIfPresent(turnDurationSeconds, forKey: .turnDurationSeconds)
         try container.encode(turnGracePeriodEnabled, forKey: .turnGracePeriodEnabled)
+        try container.encode(affordableCardHighlightEnabled, forKey: .affordableCardHighlightEnabled)
     }
 }
 

@@ -196,7 +196,7 @@ struct MultiplayerFlowView: View {
     private func syncActiveMatch() {
         guard let game = session.game, let room = session.room else { return }
         if game.status == .finished {
-            finalizeOutcome(game)
+            finalizeOutcome(game, roomName: room.descriptor.name)
             return
         }
         guard session.phase == .game else { return }
@@ -238,13 +238,14 @@ struct MultiplayerFlowView: View {
         try? modelContext.save()
     }
 
-    private func finalizeOutcome(_ game: ClientGameSnapshot) {
+    private func finalizeOutcome(_ game: ClientGameSnapshot, roomName: String) {
         do {
             _ = try MatchOutcomeRecorder.record(
                 snapshot: game,
                 ownerKey: profile.uuid.uuidString,
                 localParticipantID: session.localID,
                 transport: session.mode,
+                roomName: roomName,
                 context: modelContext
             )
             clearActiveMatch(includeSaved: true)

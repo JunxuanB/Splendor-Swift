@@ -35,6 +35,11 @@ final class MedalRecord {
     var issuerUUID: UUID = UUID()
     var issuerNicknameSnapshot: String = ""
     var gameID: UUID = UUID()
+    /// Empty for records created before room metadata was persisted.
+    var roomName: String = ""
+    /// Winner prestige minus this issuer's prestige. `nil` identifies legacy
+    /// records whose final score margin was not persisted.
+    var scoreMargin: Int?
     var awardedAt: Date = Date()
 
     init(
@@ -42,6 +47,8 @@ final class MedalRecord {
         issuerUUID: UUID,
         issuerNicknameSnapshot: String,
         gameID: UUID,
+        roomName: String = "",
+        scoreMargin: Int? = nil,
         awardedAt: Date = Date()
     ) {
         self.ownerKey = ownerKey
@@ -49,6 +56,8 @@ final class MedalRecord {
         self.issuerUUID = issuerUUID
         self.issuerNicknameSnapshot = issuerNicknameSnapshot
         self.gameID = gameID
+        self.roomName = roomName
+        self.scoreMargin = scoreMargin.map { max(0, $0) }
         self.awardedAt = awardedAt
     }
 
@@ -64,6 +73,8 @@ final class CompletedGameRecord {
     var logicalKey: String = ""
     var gameID: UUID = UUID()
     var localParticipantID: UUID = UUID()
+    /// Empty for records created before room metadata was persisted.
+    var roomName: String = ""
     var modeRawValue: String = "standard"
     var transportRawValue: String = MultiplayerMode.lan.rawValue
     var endedAt: Date = Date()
@@ -73,6 +84,7 @@ final class CompletedGameRecord {
         ownerKey: String = "",
         gameID: UUID,
         localParticipantID: UUID = UUID(),
+        roomName: String = "",
         modeRawValue: String,
         transportRawValue: String = MultiplayerMode.lan.rawValue,
         endedAt: Date = Date(),
@@ -82,6 +94,7 @@ final class CompletedGameRecord {
         logicalKey = Self.makeLogicalKey(ownerKey: ownerKey, gameID: gameID)
         self.gameID = gameID
         self.localParticipantID = localParticipantID
+        self.roomName = roomName
         self.modeRawValue = modeRawValue
         self.transportRawValue = transportRawValue
         self.endedAt = endedAt

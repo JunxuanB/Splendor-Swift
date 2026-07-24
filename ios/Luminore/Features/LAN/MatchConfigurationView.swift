@@ -32,11 +32,19 @@ struct ConfigurationView: View {
                             .font(.footnote)
                             .foregroundStyle(.secondary)
                     }
+                    Toggle(
+                        "config.affordableCardHighlight.enabled",
+                        isOn: affordableCardHighlightBinding(room.configuration)
+                    )
+                    Text("config.affordableCardHighlight.description")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
                     if room.participants.count > 4 {
                         Label("config.customLargeTable", systemImage: "person.3.fill")
                             .foregroundStyle(.orange)
                     }
                 }
+                .disabled(!session.isHost)
                 Section("config.ai") {
                     Toggle("config.ai.add", isOn: .constant(false)).disabled(true)
                     Picker("config.ai.difficulty", selection: .constant(BotDifficulty.normal)) {
@@ -55,12 +63,12 @@ struct ConfigurationView: View {
                 } else {
                     Section {
                         ProgressView("config.waitingHost")
+                            .frame(maxWidth: .infinity, alignment: .center)
                     }
                 }
             }
         }
         .navigationTitle("config.title")
-        .disabled(!session.isHost)
     }
 
     private func modeRow(_ title: LocalizedStringKey, selected: Bool, enabled: Bool) -> some View {
@@ -76,45 +84,21 @@ struct ConfigurationView: View {
     private func scoreBinding(_ configuration: GameConfiguration) -> Binding<Int> {
         Binding(
             get: { session.room?.configuration.targetPrestige ?? configuration.targetPrestige },
-            set: {
-                session.updateConfiguration(.init(
-                    mode: .standard,
-                    targetPrestige: $0,
-                    turnDurationSeconds: session.room?.configuration.turnDurationSeconds,
-                    turnGracePeriodEnabled: session.room?.configuration.turnGracePeriodEnabled
-                        ?? configuration.turnGracePeriodEnabled
-                ))
-            }
+            set: { score in update(configuration) { $0.targetPrestige = score } }
         )
     }
 
     private func timerEnabledBinding(_ configuration: GameConfiguration) -> Binding<Bool> {
         Binding(
             get: { session.room?.configuration.turnDurationSeconds != nil },
-            set: { enabled in
-                session.updateConfiguration(.init(
-                    mode: .standard,
-                    targetPrestige: session.room?.configuration.targetPrestige ?? configuration.targetPrestige,
-                    turnDurationSeconds: enabled ? 30 : nil,
-                    turnGracePeriodEnabled: session.room?.configuration.turnGracePeriodEnabled
-                        ?? configuration.turnGracePeriodEnabled
-                ))
-            }
+            set: { enabled in update(configuration) { $0.turnDurationSeconds = enabled ? 30 : nil } }
         )
     }
 
     private func timerBinding(_ configuration: GameConfiguration) -> Binding<Int> {
         Binding(
             get: { session.room?.configuration.turnDurationSeconds ?? configuration.turnDurationSeconds ?? 30 },
-            set: { seconds in
-                session.updateConfiguration(.init(
-                    mode: .standard,
-                    targetPrestige: session.room?.configuration.targetPrestige ?? configuration.targetPrestige,
-                    turnDurationSeconds: seconds,
-                    turnGracePeriodEnabled: session.room?.configuration.turnGracePeriodEnabled
-                        ?? configuration.turnGracePeriodEnabled
-                ))
-            }
+            set: { seconds in update(configuration) { $0.turnDurationSeconds = seconds } }
         )
     }
 
@@ -124,17 +108,26 @@ struct ConfigurationView: View {
                 session.room?.configuration.turnGracePeriodEnabled
                     ?? configuration.turnGracePeriodEnabled
             },
-            set: { enabled in
-                session.updateConfiguration(.init(
-                    mode: .standard,
-                    targetPrestige: session.room?.configuration.targetPrestige
-                        ?? configuration.targetPrestige,
-                    turnDurationSeconds: session.room?.configuration.turnDurationSeconds
-                        ?? configuration.turnDurationSeconds,
-                    turnGracePeriodEnabled: enabled
-                ))
-            }
+            set: { enabled in update(configuration) { $0.turnGracePeriodEnabled = enabled } }
         )
     }
-}
 
+    private func affordableCardHighlightBinding(_ configuration: GameConfiguration) -> Binding<Bool> {
+        Binding(
+            get: {
+                session.room?.configuration.affordableCardHighlightEnabled
+                    ?? configuration.affordableCardHighlightEnabled
+            },
+            set: { enabled in update(configuration) { $0.affordableCardHighlightEnabled = enabled } }
+        )
+    }
+
+    private func update(
+        _ fallback: GameConfiguration,
+        mutation: (inout GameConfiguration) -> Void
+    ) {
+        var configuration = session.room?.configuration ?? fallback
+        mutation(&configuration)
+        session.updateConfiguration(configuration)
+    }
+}

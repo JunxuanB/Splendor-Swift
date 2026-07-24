@@ -218,6 +218,7 @@ struct DevelopmentCardView: View {
     var enlarged = false
     var compactHeight: CGFloat = 80
     var isPurchasable = false
+    var showsPurchaseHighlight = true
 
     private var cornerRadius: CGFloat { enlarged ? 24 : 14 }
     private var cardHeight: CGFloat { enlarged ? 220 : compactHeight }
@@ -258,7 +259,7 @@ struct DevelopmentCardView: View {
         .background(Color(.secondarySystemGroupedBackground))
         .clipShape(shape)
         .overlay {
-            if isPurchasable {
+            if isPurchasable && showsPurchaseHighlight {
                 ShimmerBorder(cornerRadius: cornerRadius, lineWidth: enlarged ? 2.5 : 1.75)
             } else {
                 shape.strokeBorder(.primary.opacity(0.08), lineWidth: 1)

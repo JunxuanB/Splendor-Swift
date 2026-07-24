@@ -146,12 +146,21 @@ final class NetworkProtocolTests: XCTestCase {
         let json = #"{"mode":"standard","targetPrestige":15,"turnDurationSeconds":30}"#
         let configuration = try JSONDecoder().decode(GameConfiguration.self, from: Data(json.utf8))
         XCTAssertTrue(configuration.turnGracePeriodEnabled)
+        XCTAssertTrue(configuration.affordableCardHighlightEnabled)
     }
 
     func testDisabledGracePeriodSurvivesRoundTrip() throws {
         let configuration = GameConfiguration(turnGracePeriodEnabled: false)
         let data = try JSONEncoder().encode(configuration)
         XCTAssertFalse(try JSONDecoder().decode(GameConfiguration.self, from: data).turnGracePeriodEnabled)
+    }
+
+    func testDisabledAffordableCardHighlightSurvivesRoundTrip() throws {
+        let configuration = GameConfiguration(affordableCardHighlightEnabled: false)
+        let data = try JSONEncoder().encode(configuration)
+        XCTAssertFalse(
+            try JSONDecoder().decode(GameConfiguration.self, from: data).affordableCardHighlightEnabled
+        )
     }
 
     func testOpeningTurnSelectionSurvivesSnapshotRoundTripAndRemainsBackwardCompatible() throws {

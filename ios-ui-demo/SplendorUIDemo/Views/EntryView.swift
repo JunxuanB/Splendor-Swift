@@ -24,23 +24,30 @@ struct EntryView: View {
                     VStack(spacing: 8) {
                         Text("璀璨宝石")
                             .font(.largeTitle.bold())
-                        Text("基础版 · UI DEMO")
+                        Text("UI DEMO")
                             .font(.subheadline.weight(.medium))
                             .foregroundStyle(.secondary)
                     }
 
                     Spacer()
 
-                    NavigationLink {
-                        GameBoardView()
-                    } label: {
-                        Label("进入演示对局", systemImage: "play.fill")
-                            .font(.headline)
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 16)
+                    VStack(spacing: 14) {
+                        NavigationLink {
+                            GameBoardView()
+                        } label: {
+                            entryLabel(title: "进入基础版演示", systemImage: "play.fill")
+                        }
+                        .buttonStyle(.borderedProminent)
+                        .buttonBorderShape(.roundedRectangle(radius: 16))
+
+                        NavigationLink {
+                            DuelGameBoardView()
+                        } label: {
+                            entryLabel(title: "进入双人版演示", systemImage: "person.2.fill")
+                        }
+                        .buttonStyle(.bordered)
+                        .buttonBorderShape(.roundedRectangle(radius: 16))
                     }
-                    .buttonStyle(.borderedProminent)
-                    .buttonBorderShape(.roundedRectangle(radius: 16))
 
                     Text("所有数据仅用于界面演示")
                         .font(.footnote)
@@ -50,6 +57,13 @@ struct EntryView: View {
                 .padding(.vertical, 24)
             }
         }
+    }
+
+    private func entryLabel(title: String, systemImage: String) -> some View {
+        Label(title, systemImage: systemImage)
+            .font(.headline)
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 16)
     }
 }
 

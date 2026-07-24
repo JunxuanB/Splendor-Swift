@@ -83,14 +83,43 @@ final class RulesEngineTests: XCTestCase {
     func testReserveMarketCardAwardsGoldAndRefillsMarket() throws {
         var state = try makeGame(count: 2)
         let playerID = state.currentPlayer.id
-        let card = try XCTUnwrap(state.market[1]?.first)
+        let marketBefore = try XCTUnwrap(state.market[1])
+        let card = marketBefore[1]
+        let replacement = try XCTUnwrap(state.decks[1]?.last)
         let deckCount = try XCTUnwrap(state.decks[1]?.count)
         try rules.apply(.reserve(source: .market(cardID: card.id), returning: [:]), playerID: playerID, to: &state)
         let player = try XCTUnwrap(state.players.first { $0.id == playerID })
         XCTAssertEqual(player.reservedCards.first?.id, card.id)
         XCTAssertEqual(player.tokens[.gold], 1)
         XCTAssertEqual(state.market[1]?.count, 4)
+        XCTAssertEqual(state.market[1]?[0], marketBefore[0])
+        XCTAssertEqual(state.market[1]?[1], replacement)
+        XCTAssertEqual(state.market[1]?[2], marketBefore[2])
+        XCTAssertEqual(state.market[1]?[3], marketBefore[3])
         XCTAssertEqual(state.decks[1]?.count, deckCount - 1)
+    }
+
+    func testPurchaseMarketCardRefillsItsOriginalPosition() throws {
+        var state = try makeGame(count: 2)
+        let index = state.currentPlayerIndex
+        let playerID = state.currentPlayer.id
+        let marketBefore = try XCTUnwrap(state.market[1])
+        let card = marketBefore[2]
+        let replacement = try XCTUnwrap(state.decks[1]?.last)
+
+        for color in GemColor.purchasableColors {
+            state.players[index].tokens[color] = card.cost[color, default: 0]
+        }
+        try rules.apply(
+            .purchase(source: .market(cardID: card.id), payment: card.cost, nobleID: nil),
+            playerID: playerID,
+            to: &state
+        )
+
+        XCTAssertEqual(state.market[1]?[0], marketBefore[0])
+        XCTAssertEqual(state.market[1]?[1], marketBefore[1])
+        XCTAssertEqual(state.market[1]?[2], replacement)
+        XCTAssertEqual(state.market[1]?[3], marketBefore[3])
     }
 
     func testPurchaseUsesChosenColoredAndGoldPayment() throws {

@@ -17,6 +17,7 @@ enum MatchOutcomeRecorder {
         ownerKey: String,
         localParticipantID: UUID,
         transport: MultiplayerMode,
+        roomName: String = "",
         context: ModelContext
     ) throws -> MatchOutcomeRecordingResult {
         guard snapshot.status == .finished,
@@ -26,18 +27,28 @@ enum MatchOutcomeRecorder {
             return MatchOutcomeRecordingResult(insertedHistory: false, insertedMedals: 0)
         }
 
+        let normalizedRoomName = String(
+            roomName.trimmingCharacters(in: .whitespacesAndNewlines).prefix(40)
+        )
+        var didUpdateMetadata = false
+
         let histories = try context.fetch(
             FetchDescriptor<CompletedGameRecord>(predicate: #Predicate { $0.ownerKey == ownerKey })
         )
         let historyKey = CompletedGameRecord.makeLogicalKey(ownerKey: ownerKey, gameID: snapshot.gameID)
         let insertedHistory: Bool
-        if histories.contains(where: { $0.logicalKey == historyKey }) {
+        if let history = histories.first(where: { $0.logicalKey == historyKey }) {
+            if history.roomName.isEmpty, !normalizedRoomName.isEmpty {
+                history.roomName = normalizedRoomName
+                didUpdateMetadata = true
+            }
             insertedHistory = false
         } else {
             context.insert(CompletedGameRecord(
                 ownerKey: ownerKey,
                 gameID: snapshot.gameID,
                 localParticipantID: localParticipantID,
+                roomName: normalizedRoomName,
                 modeRawValue: snapshot.configuration.mode.rawValue,
                 transportRawValue: transport.rawValue,
                 endedAt: result.finishedAt,
@@ -52,29 +63,57 @@ enum MatchOutcomeRecorder {
             let existing = try context.fetch(
                 FetchDescriptor<MedalRecord>(predicate: #Predicate { $0.ownerKey == ownerKey })
             )
-            var existingKeys = Set(existing.map(\.logicalKey))
+            var existingByKey = Dictionary(
+                existing.map { ($0.logicalKey, $0) },
+                uniquingKeysWith: { first, _ in first }
+            )
             let issuers = snapshot.players.filter {
                 $0.kind == .human && !result.winnerIDs.contains($0.id)
             }
+            let winnerPrestige = result.standings.first {
+                $0.playerID == localParticipantID
+            }?.prestige
             for issuer in issuers {
                 let key = MedalRecord.makeLogicalKey(
                     ownerKey: ownerKey,
                     gameID: snapshot.gameID,
                     issuerUUID: issuer.id
                 )
-                guard existingKeys.insert(key).inserted else { continue }
-                context.insert(MedalRecord(
+                let issuerPrestige = result.standings.first {
+                    $0.playerID == issuer.id
+                }?.prestige
+                let scoreMargin = winnerPrestige.flatMap { winner in
+                    issuerPrestige.map { max(0, winner - $0) }
+                }
+
+                if let existingMedal = existingByKey[key] {
+                    if existingMedal.roomName.isEmpty, !normalizedRoomName.isEmpty {
+                        existingMedal.roomName = normalizedRoomName
+                        didUpdateMetadata = true
+                    }
+                    if existingMedal.scoreMargin == nil, let scoreMargin {
+                        existingMedal.scoreMargin = scoreMargin
+                        didUpdateMetadata = true
+                    }
+                    continue
+                }
+
+                let medal = MedalRecord(
                     ownerKey: ownerKey,
                     issuerUUID: issuer.id,
                     issuerNicknameSnapshot: issuer.nickname,
                     gameID: snapshot.gameID,
+                    roomName: normalizedRoomName,
+                    scoreMargin: scoreMargin,
                     awardedAt: result.finishedAt
-                ))
+                )
+                context.insert(medal)
+                existingByKey[key] = medal
                 insertedMedals += 1
             }
         }
 
-        if insertedHistory || insertedMedals > 0 {
+        if insertedHistory || insertedMedals > 0 || didUpdateMetadata {
             try context.save()
         }
         return MatchOutcomeRecordingResult(

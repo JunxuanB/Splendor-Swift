@@ -48,53 +48,6 @@ struct ProfileRecordsSections: View {
     }
 }
 
-struct MedalListView: View {
-    @Query private var medals: [MedalRecord]
-
-    init(profile: AccountProfile) {
-        let ownerKey = profile.uuid.uuidString
-        _medals = Query(
-            filter: #Predicate<MedalRecord> { $0.ownerKey == ownerKey },
-            sort: \.awardedAt,
-            order: .reverse
-        )
-    }
-
-    private var uniqueMedals: [MedalRecord] { medals.uniqueScopedMedals }
-
-    var body: some View {
-        Group {
-            if uniqueMedals.isEmpty {
-                ContentUnavailableView("account.medals.empty", systemImage: "medal")
-            } else {
-                List(uniqueMedals) { medal in
-                    VStack(alignment: .leading, spacing: 5) {
-                        HStack {
-                            Label(medal.issuerNicknameSnapshot, systemImage: "person.crop.circle.fill")
-                                .font(.headline)
-                            Spacer()
-                            Image(systemName: "medal.fill").foregroundStyle(.orange)
-                        }
-                        Text(medal.issuerUUID.uuidString)
-                            .font(.caption2.monospaced())
-                            .foregroundStyle(.secondary)
-                            .textSelection(.enabled)
-                        HStack {
-                            Text(medal.awardedAt, format: .dateTime.year().month().day().hour().minute())
-                            Spacer()
-                            Text("history.game.short \(medal.gameID.uuidString.prefix(8))")
-                        }
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                    }
-                    .padding(.vertical, 3)
-                }
-            }
-        }
-        .navigationTitle("account.medals")
-    }
-}
-
 struct MatchHistoryView: View {
     @Query private var games: [CompletedGameRecord]
 
@@ -155,6 +108,16 @@ private struct MatchHistoryRow: View {
             }
             .font(.subheadline)
             .foregroundStyle(.secondary)
+            if !record.roomName.isEmpty {
+                Label {
+                    Text(verbatim: record.roomName)
+                } icon: {
+                    Image(systemName: "door.left.hand.open")
+                }
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .lineLimit(1)
+            }
             if let standing = localStanding, let result {
                 Text("history.summary \(standing.rank) \(result.standings.count) \(standing.prestige)")
                     .font(.caption)
@@ -198,6 +161,14 @@ private struct MatchHistoryDetailView: View {
                 }
                 LabeledContent("history.transport") {
                     Text(record.multiplayerMode.titleKey)
+                }
+                LabeledContent("history.room") {
+                    if record.roomName.isEmpty {
+                        Text("history.room.unavailable")
+                            .foregroundStyle(.secondary)
+                    } else {
+                        Text(verbatim: record.roomName)
+                    }
                 }
                 LabeledContent("history.gameID") {
                     Text(record.gameID.uuidString)

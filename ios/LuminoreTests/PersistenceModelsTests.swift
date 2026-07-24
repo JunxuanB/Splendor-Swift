@@ -119,6 +119,9 @@ final class PersistenceModelsTests: XCTestCase {
         XCTAssertEqual(accounts.map(\.nickname), ["Aurora"])
         XCTAssertEqual(medals.first?.gameID, gameID)
         XCTAssertEqual(games.first?.gameID, gameID)
+        XCTAssertEqual(medals.first?.roomName, "")
+        XCTAssertNil(medals.first?.scoreMargin)
+        XCTAssertEqual(games.first?.roomName, "")
         // logicalKey is now unique per profile rather than a shared "primary" key.
         XCTAssertEqual(account.logicalKey, account.uuid.uuidString)
     }
@@ -153,6 +156,7 @@ final class PersistenceModelsTests: XCTestCase {
             ownerKey: winnerOwner,
             localParticipantID: winner.id,
             transport: .internet,
+            roomName: "Final Table",
             context: context
         )
         let repeated = try MatchOutcomeRecorder.record(
@@ -160,6 +164,7 @@ final class PersistenceModelsTests: XCTestCase {
             ownerKey: winnerOwner,
             localParticipantID: winner.id,
             transport: .internet,
+            roomName: "Final Table",
             context: context
         )
         let loserResult = try MatchOutcomeRecorder.record(
@@ -167,6 +172,7 @@ final class PersistenceModelsTests: XCTestCase {
             ownerKey: loser.id.uuidString,
             localParticipantID: loser.id,
             transport: .internet,
+            roomName: "Final Table",
             context: context
         )
 
@@ -180,9 +186,12 @@ final class PersistenceModelsTests: XCTestCase {
         XCTAssertEqual(medals.first?.ownerKey, winnerOwner)
         XCTAssertEqual(medals.first?.issuerUUID, loser.id)
         XCTAssertEqual(medals.first?.awardedAt, finishedAt)
+        XCTAssertEqual(medals.first?.roomName, "Final Table")
+        XCTAssertEqual(medals.first?.scoreMargin, 6)
         XCTAssertEqual(histories.count, 2)
         let winnerHistory = try XCTUnwrap(histories.first { $0.ownerKey == winnerOwner })
         XCTAssertEqual(winnerHistory.multiplayerMode, .internet)
+        XCTAssertEqual(winnerHistory.roomName, "Final Table")
         XCTAssertEqual(winnerHistory.result, state.result)
     }
 

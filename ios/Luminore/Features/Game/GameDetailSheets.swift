@@ -33,6 +33,7 @@ struct CardDetailSheet: View {
     let player: PublicPlayerSnapshot
     let nobles: [NobleTile]
     let allowsActions: Bool
+    let showsPurchaseHighlight: Bool
     let onReserve: () -> Void
     let onPurchase: ([GemColor: Int], String?) -> Void
 
@@ -52,7 +53,8 @@ struct CardDetailSheet: View {
                 DevelopmentCardView(
                     card: selection.card,
                     enlarged: true,
-                    isPurchasable: canPurchase(selection.card, player: player)
+                    isPurchasable: canPurchase(selection.card, player: player),
+                    showsPurchaseHighlight: showsPurchaseHighlight
                 )
                 .frame(width: 190)
 
@@ -142,6 +144,7 @@ struct NobleDetailSheet: View {
 
 struct ReservedCardsSheet: View {
     let request: ReservedCardsSheetRequest
+    let showsPurchaseHighlight: Bool
     let onSelectCard: (DevelopmentCard) -> Void
     @Environment(\.dismiss) private var dismiss
 
@@ -166,7 +169,8 @@ struct ReservedCardsSheet: View {
                                 DevelopmentCardView(
                                     card: card,
                                     compactHeight: 136,
-                                    isPurchasable: isPurchasable
+                                    isPurchasable: isPurchasable,
+                                    showsPurchaseHighlight: showsPurchaseHighlight
                                 )
 
                                 if isPurchasable {

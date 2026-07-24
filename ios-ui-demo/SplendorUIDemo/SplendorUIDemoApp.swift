@@ -4,9 +4,7 @@ import SwiftUI
 struct SplendorUIDemoApp: App {
     var body: some Scene {
         WindowGroup {
-            NavigationStack {
-                GameBoardView()
-            }
+            EntryView()
         }
     }
 }

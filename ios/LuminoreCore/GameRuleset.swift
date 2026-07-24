@@ -198,8 +198,7 @@ private extension StandardRuleset {
         switch source {
         case let .market(cardID):
             guard let located = locateMarketCard(cardID, state: state) else { throw GameRuleError.cardNotFound }
-            card = state.market[located.tier]!.remove(at: located.index)
-            refillMarket(tier: located.tier, state: &state)
+            card = removeMarketCard(at: located, state: &state)
         case let .deck(tier):
             guard (1 ... 3).contains(tier), let hidden = state.decks[tier]?.popLast() else {
                 throw GameRuleError.cardNotFound
@@ -252,8 +251,7 @@ private extension StandardRuleset {
         }
 
         if let marketLocation {
-            state.market[marketLocation.tier]!.remove(at: marketLocation.index)
-            refillMarket(tier: marketLocation.tier, state: &state)
+            _ = removeMarketCard(at: marketLocation, state: &state)
         } else if let reservedIndex {
             state.players[index].reservedCards.remove(at: reservedIndex)
         }
@@ -314,10 +312,17 @@ private extension StandardRuleset {
         return nil
     }
 
-    func refillMarket(tier: Int, state: inout GameState) {
-        if let replacement = state.decks[tier]?.popLast() {
-            state.market[tier, default: []].append(replacement)
+    func removeMarketCard(
+        at location: (tier: Int, index: Int),
+        state: inout GameState
+    ) -> DevelopmentCard {
+        let card = state.market[location.tier]![location.index]
+        if let replacement = state.decks[location.tier]?.popLast() {
+            state.market[location.tier]![location.index] = replacement
+        } else {
+            state.market[location.tier]!.remove(at: location.index)
         }
+        return card
     }
 
     func takeNoble(_ noble: NobleTile, playerIndex: Int, state: inout GameState) {

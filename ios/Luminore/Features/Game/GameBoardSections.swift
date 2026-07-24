@@ -267,7 +267,8 @@ struct MarketSection: View {
                             } label: {
                                 DevelopmentCardView(
                                     card: card,
-                                    isPurchasable: canPurchase(card, player: player)
+                                    isPurchasable: canPurchase(card, player: player),
+                                    showsPurchaseHighlight: snapshot.configuration.affordableCardHighlightEnabled
                                 )
                                 .gameFlightAnchor(.marketCard(card.id))
                             }

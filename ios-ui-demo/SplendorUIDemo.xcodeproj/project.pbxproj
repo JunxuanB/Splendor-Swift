@@ -17,6 +17,15 @@
 		A10000000000000000000008 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000008 /* Assets.xcassets */; };
 		A10000000000000000000009 /* DemoGameStateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000009 /* DemoGameStateTests.swift */; };
 		A1000000000000000000000A /* FlightSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000000000000000000000C /* FlightSupport.swift */; };
+		A1000000000000000000000B /* DuelModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000000000000000000000D /* DuelModels.swift */; };
+		A1000000000000000000000C /* DuelGameState.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000000000000000000000E /* DuelGameState.swift */; };
+		A1000000000000000000000D /* DuelGameBoardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000000000000000000000F /* DuelGameBoardView.swift */; };
+		A1000000000000000000000E /* DuelGemViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000010 /* DuelGemViews.swift */; };
+		A1000000000000000000000F /* DuelTokenBoard.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000011 /* DuelTokenBoard.swift */; };
+		A10000000000000000000010 /* DuelCardCarousel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000012 /* DuelCardCarousel.swift */; };
+		A10000000000000000000011 /* DuelSheets.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000013 /* DuelSheets.swift */; };
+		A10000000000000000000012 /* DuelFlightSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000014 /* DuelFlightSupport.swift */; };
+		A10000000000000000000013 /* DuelGameStateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000015 /* DuelGameStateTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -42,6 +51,15 @@
 		A2000000000000000000000A /* SplendorUIDemo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SplendorUIDemo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A2000000000000000000000B /* SplendorUIDemoTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SplendorUIDemoTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		A2000000000000000000000C /* FlightSupport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlightSupport.swift; sourceTree = "<group>"; };
+		A2000000000000000000000D /* DuelModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DuelModels.swift; sourceTree = "<group>"; };
+		A2000000000000000000000E /* DuelGameState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DuelGameState.swift; sourceTree = "<group>"; };
+		A2000000000000000000000F /* DuelGameBoardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DuelGameBoardView.swift; sourceTree = "<group>"; };
+		A20000000000000000000010 /* DuelGemViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DuelGemViews.swift; sourceTree = "<group>"; };
+		A20000000000000000000011 /* DuelTokenBoard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DuelTokenBoard.swift; sourceTree = "<group>"; };
+		A20000000000000000000012 /* DuelCardCarousel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DuelCardCarousel.swift; sourceTree = "<group>"; };
+		A20000000000000000000013 /* DuelSheets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DuelSheets.swift; sourceTree = "<group>"; };
+		A20000000000000000000014 /* DuelFlightSupport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DuelFlightSupport.swift; sourceTree = "<group>"; };
+		A20000000000000000000015 /* DuelGameStateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DuelGameStateTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -87,8 +105,18 @@
 			children = (
 				A20000000000000000000002 /* GameModels.swift */,
 				A20000000000000000000003 /* DemoGameState.swift */,
+				A70000000000000000000008 /* Duel */,
 			);
 			path = Models;
+			sourceTree = "<group>";
+		};
+		A70000000000000000000008 /* Duel */ = {
+			isa = PBXGroup;
+			children = (
+				A2000000000000000000000D /* DuelModels.swift */,
+				A2000000000000000000000E /* DuelGameState.swift */,
+			);
+			path = Duel;
 			sourceTree = "<group>";
 		};
 		A70000000000000000000004 /* Views */ = {
@@ -97,8 +125,22 @@
 				A20000000000000000000004 /* EntryView.swift */,
 				A20000000000000000000005 /* GameBoardView.swift */,
 				A70000000000000000000005 /* Components */,
+				A70000000000000000000009 /* Duel */,
 			);
 			path = Views;
+			sourceTree = "<group>";
+		};
+		A70000000000000000000009 /* Duel */ = {
+			isa = PBXGroup;
+			children = (
+				A2000000000000000000000F /* DuelGameBoardView.swift */,
+				A20000000000000000000010 /* DuelGemViews.swift */,
+				A20000000000000000000011 /* DuelTokenBoard.swift */,
+				A20000000000000000000012 /* DuelCardCarousel.swift */,
+				A20000000000000000000013 /* DuelSheets.swift */,
+				A20000000000000000000014 /* DuelFlightSupport.swift */,
+			);
+			path = Duel;
 			sourceTree = "<group>";
 		};
 		A70000000000000000000005 /* Components */ = {
@@ -115,6 +157,7 @@
 			isa = PBXGroup;
 			children = (
 				A20000000000000000000009 /* DemoGameStateTests.swift */,
+				A20000000000000000000015 /* DuelGameStateTests.swift */,
 			);
 			path = SplendorUIDemoTests;
 			sourceTree = "<group>";
@@ -228,6 +271,14 @@
 				A10000000000000000000006 /* GemViews.swift in Sources */,
 				A10000000000000000000007 /* BoardSections.swift in Sources */,
 				A1000000000000000000000A /* FlightSupport.swift in Sources */,
+				A1000000000000000000000B /* DuelModels.swift in Sources */,
+				A1000000000000000000000C /* DuelGameState.swift in Sources */,
+				A1000000000000000000000D /* DuelGameBoardView.swift in Sources */,
+				A1000000000000000000000E /* DuelGemViews.swift in Sources */,
+				A1000000000000000000000F /* DuelTokenBoard.swift in Sources */,
+				A10000000000000000000010 /* DuelCardCarousel.swift in Sources */,
+				A10000000000000000000011 /* DuelSheets.swift in Sources */,
+				A10000000000000000000012 /* DuelFlightSupport.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -236,6 +287,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				A10000000000000000000009 /* DemoGameStateTests.swift in Sources */,
+				A10000000000000000000013 /* DuelGameStateTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
