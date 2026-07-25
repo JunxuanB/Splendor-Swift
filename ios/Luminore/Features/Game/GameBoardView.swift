@@ -14,6 +14,8 @@ struct GameBoardView: View {
     @State private var reservedSheet: ReservedCardsSheetRequest?
     @State private var isShowingExitConfirmation = false
     @State private var isShowingPassConfirmation = false
+    @State private var isShowingDeveloperGemEditor = false
+    @State private var developerTokens: [GemColor: Int] = [:]
     @State private var flights: [GameFlight] = []
     @State private var bursts: [GameBurst] = []
 
@@ -106,6 +108,14 @@ struct GameBoardView: View {
                                 : []
                         )
                     }
+                )
+                .simultaneousGesture(
+                    TapGesture(count: DeveloperTools.unlockTapCount)
+                        .onEnded {
+                            guard DeveloperTools.isEnabledForCurrentBuild, session.isHost else { return }
+                            developerTokens = player.tokens
+                            isShowingDeveloperGemEditor = true
+                        }
                 )
             }
         }
@@ -231,6 +241,11 @@ struct GameBoardView: View {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
                     selectedCard = SelectedCard(card: card, source: .reserved(cardID: card.id))
                 }
+            }
+        }
+        .sheet(isPresented: $isShowingDeveloperGemEditor) {
+            DeveloperStandardGemEditor(tokens: $developerTokens) {
+                session.developerSetLocalTokens(developerTokens)
             }
         }
         .onChange(of: snapshot?.revision) { _, _ in

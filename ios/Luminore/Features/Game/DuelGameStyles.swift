@@ -9,7 +9,7 @@ extension DuelTokenColor {
         case .emerald: Color(red: 0.05, green: 0.67, blue: 0.44)
         case .ruby: Color(red: 0.88, green: 0.18, blue: 0.31)
         case .onyx: Color(red: 0.20, green: 0.22, blue: 0.29)
-        case .pearl: Color(red: 0.90, green: 0.86, blue: 0.94)
+        case .pearl: Color(red: 0.94, green: 0.80, blue: 0.88)
         case .gold: Color(red: 0.98, green: 0.72, blue: 0.16)
         }
     }
@@ -353,6 +353,81 @@ struct DuelCardCrowns: View {
         }
         .foregroundStyle(crownColor)
         .accessibilityHidden(true)
+    }
+}
+
+/// Connects the centers of the board spaces in refill (spiral) order — center-out,
+/// ending at the bottom-right corner. Drawn faintly behind the 5×5 gem grid.
+struct DuelSpiralPath: Shape {
+    let order: [Int]
+    var columns = 5
+    var spacing: CGFloat = 6
+
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        guard columns > 0 else { return path }
+        let cellWidth = (rect.width - spacing * CGFloat(columns - 1)) / CGFloat(columns)
+        let cellHeight = (rect.height - spacing * CGFloat(columns - 1)) / CGFloat(columns)
+
+        func center(_ index: Int) -> CGPoint {
+            let row = index / columns, col = index % columns
+            return CGPoint(
+                x: CGFloat(col) * (cellWidth + spacing) + cellWidth / 2,
+                y: CGFloat(row) * (cellHeight + spacing) + cellHeight / 2
+            )
+        }
+
+        for (offset, index) in order.enumerated() {
+            let point = center(index)
+            if offset == 0 { path.move(to: point) } else { path.addLine(to: point) }
+        }
+        return path
+    }
+}
+
+/// A compact 5×5 board used inside sheets to pick a specific board position
+/// (a gold token to reserve, or a matching token to take) by tapping it in place —
+/// far clearer than a list of "row,column" coordinates.
+struct DuelMiniBoardPicker: View {
+    let board: [DuelTokenColor?]
+    let selectableIndices: [Int]
+    @Binding var selection: Int?
+
+    private let columns = Array(repeating: GridItem(.flexible(), spacing: 5), count: 5)
+
+    var body: some View {
+        LazyVGrid(columns: columns, spacing: 5) {
+            ForEach(board.indices, id: \.self) { index in
+                if let color = board[index] {
+                    let selectable = selectableIndices.contains(index)
+                    Button {
+                        if selectable { selection = index }
+                    } label: {
+                        DuelTokenChip(
+                            color: color,
+                            diameter: 34,
+                            selected: selection == index,
+                            dimmed: !selectable
+                        )
+                        .frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.plain)
+                    .disabled(!selectable)
+                } else {
+                    Circle()
+                        .strokeBorder(.primary.opacity(0.08), style: StrokeStyle(lineWidth: 1, dash: [3, 3]))
+                        .frame(width: 34, height: 34)
+                        .frame(maxWidth: .infinity)
+                        .accessibilityHidden(true)
+                }
+            }
+        }
+        .background {
+            DuelSpiralPath(order: DuelRules.spiralOrder, spacing: 5)
+                .stroke(style: StrokeStyle(lineWidth: 1, lineCap: .round, dash: [2.5, 3.5]))
+                .foregroundStyle(.primary.opacity(0.10))
+                .allowsHitTesting(false)
+        }
     }
 }
 

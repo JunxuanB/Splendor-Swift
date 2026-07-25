@@ -462,14 +462,22 @@ extension MatchSessionService {
             return
         }
         let playerID = state.currentPlayer.id
-        let revision = state.revision
         let graceSeconds = state.configuration.turnGracePeriodEnabled ? 5 : 0
-        turnDeadline = Date().addingTimeInterval(TimeInterval(seconds))
+        // Identify this timer by its deadline, NOT the game revision: Duel optional
+        // actions (spend-privilege / replenish) bump the revision without rescheduling
+        // the timer, so a revision check would make the auto-pass silently no-op and
+        // the clock would run past the grace window forever. The deadline only changes
+        // when the timer is genuinely rescheduled (a turn-completing action), so a stale
+        // task fails this guard while a still-running turn is correctly auto-passed.
+        let deadline = Date().addingTimeInterval(TimeInterval(seconds))
+        turnDeadline = deadline
         turnTask = Task { [weak self] in
             try? await Task.sleep(for: .seconds(seconds + graceSeconds))
             guard !Task.isCancelled else { return }
             await MainActor.run {
-                guard let self, self.authoritativeGame?.revision == revision,
+                guard let self, !self.isPaused,
+                      self.turnDeadline == deadline,
+                      self.authoritativeGame?.status == .playing,
                       self.authoritativeGame?.currentPlayer.id == playerID else { return }
                 self.apply(.pass, from: playerID, allowsPass: true)
             }

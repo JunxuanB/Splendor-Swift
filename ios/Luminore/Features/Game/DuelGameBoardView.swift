@@ -22,10 +22,17 @@ struct DuelGameBoardView: View {
     @State private var selectedIndices: [Int] = []
     @State private var privilegeMode = false
     @State private var selectedCard: DuelCardSelection?
+    @State private var selectedRoyal: DuelRoyalCard?
     @State private var reserveSelection: DuelReserveSelection?
     @State private var returnDraft: DuelReturnDraft?
     @State private var showsReserved = false
     @State private var showsExitConfirmation = false
+    @State private var showsSkipConfirmation = false
+    @State private var extraTurnNotice: DuelExtraTurnNotice?
+    @State private var lastPurchaseCounts: [UUID: Int] = [:]
+    @State private var lastCurrentPlayerID: UUID?
+    @State private var showsDeveloperGemEditor = false
+    @State private var developerTokens: [DuelTokenColor: Int] = [:]
 
     private var snapshot: ClientGameSnapshot? { session.game }
     private var duel: DuelClientSnapshot? { snapshot?.duel }
@@ -60,10 +67,7 @@ struct DuelGameBoardView: View {
                             isCurrent: snapshot.currentPlayerID == opponent.id
                         )
 
-                        Picker("duel.page.picker", selection: $page) {
-                            ForEach(DuelBoardPage.allCases) { Text($0.titleKey).tag($0) }
-                        }
-                        .pickerStyle(.segmented)
+                        pagePicker
 
                         TabView(selection: $page) {
                             DuelTokenBoardSection(
@@ -74,7 +78,8 @@ struct DuelGameBoardView: View {
                                 privilegeMode: $privilegeMode,
                                 onTapToken: tapBoardToken,
                                 onConfirmTake: prepareTake,
-                                onReplenish: { session.submit(.duel(.replenish)) }
+                                onReplenish: { session.submit(.duel(.replenish)) },
+                                onSkipTurn: { showsSkipConfirmation = true }
                             )
                             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
                             .tag(DuelBoardPage.tokens)
@@ -85,7 +90,8 @@ struct DuelGameBoardView: View {
                                 isLocalTurn: isLocalTurn,
                                 showsHighlight: snapshot.configuration.affordableCardHighlightEnabled,
                                 onSelectCard: { selectedCard = DuelCardSelection(card: $0, source: $1) },
-                                onReserveDeck: { reserveSelection = DuelReserveSelection(source: .deck(tier: $0), card: nil) }
+                                onReserveDeck: { reserveSelection = DuelReserveSelection(source: .deck(tier: $0), card: nil) },
+                                onSelectRoyal: { selectedRoyal = $0 }
                             )
                             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
                             .tag(DuelBoardPage.cards)
@@ -99,7 +105,7 @@ struct DuelGameBoardView: View {
             .background(Color(.systemGroupedBackground))
 
             if let localPlayer {
-                DuelPlayerInventoryBar(player: localPlayer, isCurrent: isLocalTurn) { showsReserved = true }
+                inventoryBar(for: localPlayer)
             }
         }
         .overlay { if isLocalTurn { CurrentTurnBorder() } }
@@ -146,20 +152,93 @@ struct DuelGameBoardView: View {
         }
         .sheet(item: $reserveSelection) { selection in reserveSheet(selection) }
         .sheet(item: $selectedCard) { selection in purchaseSheet(selection) }
+        .sheet(item: $selectedRoyal) { royal in DuelRoyalDetailSheet(royal: royal) }
         .sheet(isPresented: $showsReserved) { reservedSheet }
+        .sheet(isPresented: $showsDeveloperGemEditor) {
+            DeveloperDuelGemEditor(tokens: $developerTokens) {
+                session.developerSetLocalTokens(developerTokens)
+            }
+        }
         .onChange(of: snapshot?.revision) { _, _ in
             selectedIndices = []
             privilegeMode = false
+            detectExtraTurn()
         }
         .onChange(of: snapshot?.currentPlayerID) { _, playerID in
             if playerID != session.localID {
                 selectedCard = nil
+                selectedRoyal = nil
                 reserveSelection = nil
                 returnDraft = nil
                 showsReserved = false
             }
         }
+        .alert("duel.skipTurn.title", isPresented: $showsSkipConfirmation) {
+            Button("common.cancel", role: .cancel) {}
+            Button("duel.skipTurn", role: .destructive) { session.submit(.pass) }
+        } message: { Text("duel.skipTurn.message") }
+        .overlay(alignment: .top) {
+            if let notice = extraTurnNotice {
+                DuelExtraTurnBanner(notice: notice)
+                    .padding(.top, 8)
+                    .transition(.move(edge: .top).combined(with: .opacity))
+                    .zIndex(20)
+            }
+        }
+        .animation(.snappy, value: extraTurnNotice)
+        .task(id: extraTurnNotice) {
+            guard extraTurnNotice != nil else { return }
+            try? await Task.sleep(for: .seconds(2.5))
+            extraTurnNotice = nil
+        }
         .sensoryFeedback(trigger: isLocalTurn) { old, new in !old && new ? .success : nil }
+        .sensoryFeedback(.success, trigger: extraTurnNotice != nil)
+    }
+
+    /// Detects the "再来一回合" (extra turn) grant across authoritative snapshots and
+    /// shows a banner on every player's screen. An extra turn is the only case where a
+    /// player's purchased-card count grows while they remain the current player — a
+    /// normal purchase passes the turn, and privilege/replenish keep the turn but add
+    /// no card. Derived client-side because Duel actions carry no animation payload.
+    private func detectExtraTurn() {
+        guard let duel, let snapshot else { return }
+        let counts = Dictionary(uniqueKeysWithValues: duel.players.map { ($0.id, $0.purchasedCards.count) })
+        let current = snapshot.currentPlayerID
+        defer {
+            lastPurchaseCounts = counts
+            lastCurrentPlayerID = current
+        }
+        guard lastCurrentPlayerID == current,
+              let previous = lastPurchaseCounts[current], let now = counts[current], now > previous
+        else { return }
+        let name = snapshot.players.first { $0.id == current }?.nickname ?? ""
+        extraTurnNotice = DuelExtraTurnNotice(playerName: name, isLocal: current == session.localID)
+    }
+
+    private var pagePicker: some View {
+        Picker("duel.page.picker", selection: $page) {
+            ForEach(DuelBoardPage.allCases) { boardPage in
+                Text(boardPage.titleKey).tag(boardPage)
+            }
+        }
+        .pickerStyle(.segmented)
+    }
+
+    private func inventoryBar(for player: DuelPublicPlayerSnapshot) -> some View {
+        DuelPlayerInventoryBar(
+            player: player,
+            isCurrent: isLocalTurn,
+            deadline: session.turnDeadline,
+            turnDurationSeconds: snapshot?.configuration.turnDurationSeconds
+        ) { showsReserved = true }
+            .simultaneousGesture(
+                TapGesture(count: DeveloperTools.unlockTapCount)
+                    .onEnded {
+                        guard DeveloperTools.isEnabledForCurrentBuild, session.isHost else { return }
+                        developerTokens = player.tokens
+                        showsDeveloperGemEditor = true
+                    }
+            )
     }
 
     @ViewBuilder private func reserveSheet(_ selection: DuelReserveSelection) -> some View {
@@ -264,5 +343,35 @@ struct DuelGameBoardView: View {
                 }
             }
         }
+    }
+}
+
+struct DuelExtraTurnNotice: Identifiable, Equatable {
+    let id = UUID()
+    let playerName: String
+    let isLocal: Bool
+}
+
+/// Transient banner announcing a 再来一回合 (extra turn) grant to every player.
+struct DuelExtraTurnBanner: View {
+    let notice: DuelExtraTurnNotice
+
+    var body: some View {
+        Label {
+            if notice.isLocal {
+                Text("duel.extraTurn.you")
+            } else {
+                Text("duel.extraTurn.player \(notice.playerName)")
+            }
+        } icon: {
+            Image(systemName: "arrow.clockwise.circle.fill")
+        }
+        .font(.subheadline.weight(.bold))
+        .foregroundStyle(.white)
+        .padding(.horizontal, 16)
+        .padding(.vertical, 10)
+        .background(Color.accentColor, in: Capsule())
+        .shadow(color: .black.opacity(0.25), radius: 8, y: 3)
+        .accessibilityAddTraits(.isStaticText)
     }
 }

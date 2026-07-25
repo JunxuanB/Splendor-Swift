@@ -91,42 +91,108 @@ struct DuelReserveSheet: View {
 
     var body: some View {
         NavigationStack {
-            Form {
-                if let card { DuelJewelCardView(card: card, enlarged: true).frame(maxWidth: .infinity) }
-                Section("duel.reserve.chooseGold") {
-                    HStack {
-                        ForEach(goldIndices, id: \.self) { index in
-                            Button {
-                                selectedGoldIndex = index
-                            } label: {
-                                VStack(spacing: 3) {
-                                    DuelTokenChip(color: .gold, diameter: 34, selected: selectedGoldIndex == index)
-                                    Text("\(index / 5 + 1),\(index % 5 + 1)").font(.caption2.monospacedDigit())
-                                }
-                            }.buttonStyle(.plain)
+            ScrollView {
+                VStack(spacing: 18) {
+                    if let card {
+                        DuelJewelCardView(card: card, enlarged: true).frame(width: 190)
+                    } else if case let .deck(tier) = source {
+                        deckHeader(tier)
+                    }
+
+                    DuelSheetSection(titleKey: "duel.reserve.chooseGold") {
+                        DuelMiniBoardPicker(board: duel.board, selectableIndices: goldIndices, selection: $selectedGoldIndex)
+                        Text("duel.reserve.goldPositionHint").font(.footnote).foregroundStyle(.secondary)
+                    }
+
+                    if requiredReturns > 0 {
+                        DuelSheetSection(titleKey: "duel.return.title") {
+                            DuelReturnControls(available: availableAfterGold, required: requiredReturns, returning: $returning)
                         }
                     }
-                    Text("duel.reserve.goldPositionHint").font(.footnote).foregroundStyle(.secondary)
-                }
-                if requiredReturns > 0 {
-                    DuelReturnEditor(available: availableAfterGold, required: requiredReturns, returning: $returning)
-                }
-            }
-            .navigationTitle("duel.reserve.title")
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) { Button("common.cancel") { dismiss() } }
-                ToolbarItem(placement: .confirmationAction) {
+
                     Button("duel.reserve") {
                         if let selectedGoldIndex {
                             onConfirm(selectedGoldIndex, returning.filter { $0.value > 0 })
                             dismiss()
                         }
                     }
+                    .buttonStyle(.borderedProminent)
+                    .controlSize(.large)
+                    .frame(maxWidth: .infinity)
                     .disabled(selectedGoldIndex == nil || returning.values.reduce(0, +) != requiredReturns)
                 }
+                .padding(20)
+            }
+            .navigationTitle("duel.reserve.title")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) { Button("common.cancel") { dismiss() } }
             }
         }
+        .presentationDetents([.medium, .large])
+        .presentationDragIndicator(.visible)
         .onAppear { selectedGoldIndex = goldIndices.first }
+    }
+
+    private func deckHeader(_ tier: Int) -> some View {
+        VStack(spacing: 8) {
+            Image(systemName: "rectangle.stack.fill").font(.largeTitle).foregroundStyle(.secondary)
+            Text(["", "Ⅰ", "Ⅱ", "Ⅲ"][tier]).font(.title3.bold())
+            Text("duel.reserve.fromDeck").font(.footnote).foregroundStyle(.secondary)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 12)
+    }
+}
+
+/// A titled rounded container used inside the Duel sheets — the sheet equivalent of
+/// a grouped `Form` section, but usable in a plain `VStack`/`ScrollView`.
+struct DuelSheetSection<Content: View>: View {
+    let titleKey: LocalizedStringKey
+    @ViewBuilder var content: Content
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text(titleKey).font(.subheadline.bold()).foregroundStyle(.secondary)
+            content
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(14)
+        .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+    }
+}
+
+/// Token-return steppers usable outside a `Form` (for the centered-style sheets).
+struct DuelReturnControls: View {
+    let available: [DuelTokenColor: Int]
+    let required: Int
+    @Binding var returning: [DuelTokenColor: Int]
+
+    var body: some View {
+        VStack(spacing: 8) {
+            Text("duel.return.required \(required)")
+                .font(.footnote).foregroundStyle(.secondary)
+                .frame(maxWidth: .infinity, alignment: .leading)
+            ForEach(DuelTokenColor.allCases) { color in
+                let held = available[color, default: 0]
+                if held > 0 {
+                    Stepper(value: binding(color), in: 0 ... held) {
+                        HStack {
+                            DuelTokenChip(color: color, diameter: 26)
+                            Text(color.localizedKey)
+                            Spacer()
+                            Text("\(returning[color, default: 0]) / \(held)").monospacedDigit()
+                        }
+                    }
+                }
+            }
+            LabeledContent("duel.return.remaining", value: "\(max(0, required - returning.values.reduce(0, +)))")
+                .font(.footnote)
+        }
+    }
+
+    private func binding(_ color: DuelTokenColor) -> Binding<Int> {
+        Binding(get: { returning[color, default: 0] }, set: { returning[color] = $0 })
     }
 }
 
@@ -200,127 +266,163 @@ struct DuelPurchaseSheet: View {
 
     var body: some View {
         NavigationStack {
-            Form {
-                DuelJewelCardView(card: card, enlarged: true, affordable: paymentValid)
-                    .frame(maxWidth: .infinity)
-                    .listRowBackground(Color.clear)
+            ScrollView {
+                VStack(spacing: 18) {
+                    DuelJewelCardView(card: card, enlarged: true, affordable: paymentValid)
+                        .frame(width: 190)
 
-                if allowsPurchase {
-                    paymentSection
-                    choiceSections
-                    if requiredReturns > 0 {
-                        DuelReturnEditor(available: availableAtEnd, required: requiredReturns, returning: $returning)
+                    bonusCapsule
+
+                    if let ability = card.ability {
+                        Label(ability.localizedKey, systemImage: ability.iconName)
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundStyle(.purple)
                     }
-                }
 
-                Section {
                     if allowsPurchase {
-                        Button("duel.purchase") { submit() }
-                            .frame(maxWidth: .infinity)
-                            .disabled(!paymentValid || !choicesValid || returning.values.reduce(0, +) != requiredReturns)
+                        choiceSections
+                        if requiredReturns > 0 {
+                            DuelSheetSection(titleKey: "duel.return.title") {
+                                DuelReturnControls(available: availableAtEnd, required: requiredReturns, returning: $returning)
+                            }
+                        }
+                        paymentSummary
                     }
-                    if let onReserve {
-                        Button("duel.reserve", action: onReserve)
-                            .frame(maxWidth: .infinity)
-                            .disabled(player.reservedCardCount >= DuelRules.reserveLimit || !duel.board.contains(.gold))
-                    }
+
+                    actionButtons
                 }
+                .padding(20)
             }
             .navigationTitle("duel.card.title")
-            .toolbar { ToolbarItem(placement: .cancellationAction) { Button("common.close") { dismiss() } } }
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar { ToolbarItem(placement: .confirmationAction) { Button("common.close") { dismiss() } } }
         }
+        .presentationDetents([.medium, .large])
+        .presentationDragIndicator(.visible)
         .onAppear { configureDefaults() }
     }
 
-    @ViewBuilder private var paymentSection: some View {
-        Section("duel.payment.title") {
-            ForEach(DuelTokenColor.boardTakeable, id: \.self) { token in
-                let discount = token.gemColor.map { player.bonuses[$0, default: 0] } ?? 0
-                let need = max(0, card.cost[token, default: 0] - discount)
-                if need > 0 {
-                    Stepper(value: paymentBinding(token), in: 0 ... min(need, player.tokens[token, default: 0])) {
-                        HStack {
-                            DuelTokenChip(color: token, diameter: 25)
-                            Text(token.localizedKey)
-                            Spacer()
-                            Text("\(coloredPayment[token, default: 0]) / \(need)").monospacedDigit()
-                        }
-                    }
+    private var bonusCapsule: some View {
+        let tint = card.isWildBonus ? Color.purple : (card.bonusColor?.tint ?? .gray)
+        return HStack(spacing: 7) {
+            Image(systemName: card.isWildBonus ? "sparkles" : (card.bonusColor?.iconName ?? "questionmark"))
+                .foregroundStyle(tint)
+            VStack(alignment: .leading, spacing: 0) {
+                Text("duel.bonus.permanent").font(.caption).foregroundStyle(.secondary)
+                if card.isWildBonus {
+                    Text("duel.bonus.wild")
+                } else if let color = card.bonusColor {
+                    Text("\(card.bonusAmount) × ") + Text(color.localizedKey)
                 }
             }
-            LabeledContent("duel.payment.gold", value: "\(goldRequired) / \(player.tokens[.gold, default: 0])")
-                .foregroundStyle(paymentValid ? Color.primary : Color.red)
-            Text("duel.payment.hint").font(.footnote).foregroundStyle(.secondary)
+            if card.crowns > 0 { DuelCardCrowns(count: card.crowns, size: 13) }
         }
+        .font(.subheadline.weight(.semibold))
+        .padding(.horizontal, 12)
+        .padding(.vertical, 7)
+        .background(tint.opacity(0.12), in: Capsule())
     }
 
     @ViewBuilder private var choiceSections: some View {
         if card.isWildBonus {
-            Section("duel.wild.choose") {
-                Picker("duel.wild.color", selection: $wildColor) {
+            DuelSheetSection(titleKey: "duel.wild.choose") {
+                HStack(spacing: 8) {
                     ForEach(DuelGemColor.allCases.filter { player.bonuses[$0, default: 0] > 0 }) { color in
-                        Label(color.localizedKey, systemImage: color.iconName).tag(Optional(color))
+                        Button { wildColor = color } label: {
+                            DuelTokenChip(color: color.tokenColor, diameter: 38, selected: wildColor == color)
+                                .frame(maxWidth: .infinity)
+                        }.buttonStyle(.plain)
                     }
                 }
             }
         }
         if card.ability == .takeMatchingToken, !matchingBoardIndices.isEmpty {
-            boardPositionSection(title: "duel.ability.chooseBoardToken", indices: matchingBoardIndices, selection: $abilityBoardIndex)
+            DuelSheetSection(titleKey: "duel.ability.chooseBoardToken") {
+                DuelMiniBoardPicker(board: duel.board, selectableIndices: matchingBoardIndices, selection: $abilityBoardIndex)
+            }
         }
         if card.ability == .stealToken, !stealable.isEmpty {
-            tokenPickerSection(title: "duel.ability.chooseStolen", selection: $stolenToken)
+            DuelSheetSection(titleKey: "duel.ability.chooseStolen") {
+                stealPicker(selection: $stolenToken)
+            }
         }
         if earnedRoyal {
-            Section("duel.royal.choose") {
-                ForEach(duel.availableRoyals) { royal in
-                    Button { royalID = royal.id } label: {
-                        HStack {
+            DuelSheetSection(titleKey: "duel.royal.choose") {
+                Label("duel.royal.chooseRequired", systemImage: "crown.fill")
+                    .font(.footnote.weight(.semibold))
+                    .foregroundStyle(Color(red: 0.72, green: 0.53, blue: 0.20))
+                HStack(spacing: 8) {
+                    ForEach(duel.availableRoyals) { royal in
+                        Button { royalID = royal.id } label: {
                             DuelRoyalCardView(royal: royal)
-                            Image(systemName: royalID == royal.id ? "checkmark.circle.fill" : "circle")
-                                .foregroundStyle(royalID == royal.id ? Color.accentColor : .secondary)
-                        }
-                    }.buttonStyle(.plain)
+                                .frame(maxWidth: .infinity)
+                                .overlay(alignment: .topTrailing) {
+                                    Image(systemName: royalID == royal.id ? "checkmark.circle.fill" : "circle")
+                                        .foregroundStyle(royalID == royal.id ? Color.accentColor : .secondary)
+                                        .padding(5)
+                                }
+                                .overlay {
+                                    RoundedRectangle(cornerRadius: 13, style: .continuous)
+                                        .strokeBorder(Color.accentColor, lineWidth: royalID == royal.id ? 2 : 0)
+                                }
+                        }.buttonStyle(.plain)
+                    }
                 }
             }
             if selectedRoyal?.ability == .stealToken, !stealable.isEmpty {
-                tokenPickerSection(title: "duel.royal.chooseStolen", selection: $royalStolenToken)
-            }
-        }
-    }
-
-    private func boardPositionSection(
-        title: LocalizedStringKey,
-        indices: [Int],
-        selection: Binding<Int?>
-    ) -> some View {
-        Section(title) {
-            HStack {
-                ForEach(indices, id: \.self) { index in
-                    Button { selection.wrappedValue = index } label: {
-                        VStack(spacing: 3) {
-                            DuelTokenChip(color: duel.board[index]!, diameter: 32, selected: selection.wrappedValue == index)
-                            Text("\(index / 5 + 1),\(index % 5 + 1)").font(.caption2.monospacedDigit())
-                        }
-                    }.buttonStyle(.plain)
+                DuelSheetSection(titleKey: "duel.royal.chooseStolen") {
+                    stealPicker(selection: $royalStolenToken)
                 }
             }
         }
     }
 
-    private func tokenPickerSection(title: LocalizedStringKey, selection: Binding<DuelTokenColor?>) -> some View {
-        Section(title) {
-            HStack {
-                ForEach(stealable) { token in
-                    Button { selection.wrappedValue = token } label: {
-                        DuelTokenChip(color: token, count: opponent.tokens[token], diameter: 34, selected: selection.wrappedValue == token)
-                    }.buttonStyle(.plain)
-                }
+    private func stealPicker(selection: Binding<DuelTokenColor?>) -> some View {
+        HStack(spacing: 8) {
+            ForEach(stealable) { token in
+                Button { selection.wrappedValue = token } label: {
+                    DuelTokenChip(color: token, count: opponent.tokens[token], diameter: 38, selected: selection.wrappedValue == token)
+                }.buttonStyle(.plain)
             }
         }
     }
 
-    private func paymentBinding(_ token: DuelTokenColor) -> Binding<Int> {
-        Binding(get: { coloredPayment[token, default: 0] }, set: { coloredPayment[token] = $0; returning = [:] })
+    private var paymentSummary: some View {
+        DuelSheetSection(titleKey: "duel.payment.title") {
+            let spend = payment.filter { $0.value > 0 }.sorted { $0.key.rawValue < $1.key.rawValue }
+            if spend.isEmpty {
+                Text("duel.payment.free").font(.footnote).foregroundStyle(.secondary)
+            } else {
+                HStack(spacing: 6) {
+                    ForEach(spend, id: \.key) { token, count in
+                        DuelTokenChip(color: token, count: count, diameter: 32)
+                    }
+                }
+            }
+            LabeledContent("duel.payment.gold") {
+                Text("\(goldRequired) / \(player.tokens[.gold, default: 0])").monospacedDigit()
+            }
+            .font(.footnote)
+            .foregroundStyle(paymentValid ? Color.secondary : Color.red)
+        }
+    }
+
+    private var actionButtons: some View {
+        HStack(spacing: 12) {
+            if let onReserve {
+                Button("duel.reserve", action: onReserve)
+                    .buttonStyle(.bordered)
+                    .frame(maxWidth: .infinity)
+                    .disabled(player.reservedCardCount >= DuelRules.reserveLimit || !duel.board.contains(.gold))
+            }
+            if allowsPurchase {
+                Button("duel.purchase") { submit() }
+                    .buttonStyle(.borderedProminent)
+                    .frame(maxWidth: .infinity)
+                    .disabled(!paymentValid || !choicesValid || returning.values.reduce(0, +) != requiredReturns)
+            }
+        }
+        .controlSize(.large)
     }
 
     private func configureDefaults() {
@@ -333,7 +435,8 @@ struct DuelPurchaseSheet: View {
         abilityBoardIndex = matchingBoardIndices.first
         stolenToken = stealable.first
         if earnedRoyal {
-            royalID = duel.availableRoyals.first?.id
+            // Do NOT pre-select a royal: reaching 3 or 6 crowns must prompt the player
+            // to choose one explicitly (the buy button stays disabled until they do).
             royalStolenToken = stealable.first
         }
     }
@@ -378,7 +481,46 @@ struct DuelReservedCardsSheet: View {
                 }
             }
             .navigationTitle("duel.reserved.title")
-            .toolbar { ToolbarItem(placement: .cancellationAction) { Button("common.close") { dismiss() } } }
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar { ToolbarItem(placement: .confirmationAction) { Button("common.close") { dismiss() } } }
         }
+        .presentationDetents([.medium, .large])
+        .presentationDragIndicator(.visible)
+    }
+}
+
+/// Informational detail for a royal card tapped on the board. Royals are claimed
+/// automatically during a purchase that crosses a crown threshold, so this sheet
+/// just explains the card and when it can be claimed — mirroring `NobleDetailSheet`.
+struct DuelRoyalDetailSheet: View {
+    let royal: DuelRoyalCard
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        NavigationStack {
+            VStack(spacing: 18) {
+                DuelRoyalCardView(royal: royal, enlarged: true).frame(width: 200)
+
+                if let ability = royal.ability {
+                    Label(ability.localizedKey, systemImage: ability.iconName)
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(.purple)
+                }
+
+                Text("duel.royal.explain")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+
+                Spacer(minLength: 0)
+            }
+            .padding(20)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+            .navigationTitle("duel.royal.title")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar { ToolbarItem(placement: .confirmationAction) { Button("common.close") { dismiss() } } }
+        }
+        .presentationDetents([.medium])
+        .presentationDragIndicator(.visible)
     }
 }

@@ -85,6 +85,8 @@ struct DuelOpponentPanel: View {
 struct DuelPlayerInventoryBar: View {
     let player: DuelPublicPlayerSnapshot
     let isCurrent: Bool
+    let deadline: Date?
+    let turnDurationSeconds: Int?
     let onOpenReserved: () -> Void
 
     var body: some View {
@@ -111,10 +113,11 @@ struct DuelPlayerInventoryBar: View {
         .padding(.horizontal, 12)
         .padding(.vertical, 8)
         .background(.bar)
-        .overlay(alignment: .top) { Divider() }
-        .overlay(alignment: .topTrailing) {
+        .overlay(alignment: .top) {
             if isCurrent {
-                Text("duel.yourTurn").font(.caption2.bold()).foregroundStyle(.tint).padding(.trailing, 12)
+                TurnProgressBar(deadline: deadline, duration: turnDurationSeconds)
+            } else {
+                Divider()
             }
         }
     }
@@ -158,6 +161,7 @@ struct DuelTokenBoardSection: View {
     let onTapToken: (Int) -> Void
     let onConfirmTake: () -> Void
     let onReplenish: () -> Void
+    let onSkipTurn: () -> Void
 
     private let columns = Array(repeating: GridItem(.flexible(), spacing: 6), count: 5)
 
@@ -173,14 +177,14 @@ struct DuelTokenBoardSection: View {
                 info(icon: "wand.and.stars", text: "\(duel.privilegesInPool)")
             }
 
-            HStack(alignment: .top, spacing: 9) {
+            HStack(alignment: .top, spacing: 10) {
                 LazyVGrid(columns: columns, spacing: 6) {
                     ForEach(duel.board.indices, id: \.self) { index in
                         if let color = duel.board[index] {
                             Button { onTapToken(index) } label: {
                                 DuelTokenChip(
                                     color: color,
-                                    diameter: 45,
+                                    diameter: 46,
                                     selected: selectedIndices.contains(index),
                                     dimmed: !isLocalTurn || color == .gold
                                 )
@@ -190,12 +194,20 @@ struct DuelTokenBoardSection: View {
                             .disabled(!isLocalTurn)
                         } else {
                             Circle().strokeBorder(.primary.opacity(0.08), style: StrokeStyle(lineWidth: 1, dash: [3, 3]))
-                                .frame(width: 45, height: 45).frame(maxWidth: .infinity)
+                                .frame(width: 46, height: 46).frame(maxWidth: .infinity)
                         }
                     }
                 }
+                .frame(maxWidth: .infinity)
+                .background {
+                    // Faint dashed guide tracing the center-out spiral refill route.
+                    DuelSpiralPath(order: DuelRules.spiralOrder, spacing: 6)
+                        .stroke(style: StrokeStyle(lineWidth: 1, lineCap: .round, dash: [2.5, 3.5]))
+                        .foregroundStyle(.primary.opacity(0.12))
+                        .allowsHitTesting(false)
+                }
 
-                VStack(spacing: 7) {
+                VStack(spacing: 8) {
                     if selectedIndices.isEmpty {
                         if privilegeMode {
                             privilegeButton.buttonStyle(.borderedProminent)
@@ -211,6 +223,16 @@ struct DuelTokenBoardSection: View {
                         }
                         .buttonStyle(.bordered)
                         .disabled(!isLocalTurn || duel.bagCount == 0 || duel.turnStage != .privilegesAvailable)
+
+                        Button(action: onSkipTurn) {
+                            VStack(spacing: 2) {
+                                Image(systemName: "forward.end.fill")
+                                Text("duel.skipTurn")
+                            }.frame(maxWidth: .infinity)
+                        }
+                        .buttonStyle(.bordered)
+                        .tint(.secondary)
+                        .disabled(!isLocalTurn)
                     } else {
                         Button("duel.take", action: onConfirmTake).buttonStyle(.borderedProminent)
                         Button("common.cancel") { selectedIndices = [] }.buttonStyle(.bordered)
@@ -218,7 +240,7 @@ struct DuelTokenBoardSection: View {
                 }
                 .font(.caption2.bold())
                 .controlSize(.small)
-                .frame(width: 70)
+                .frame(width: 66)
             }
 
             Text("duel.privilege.legend")
@@ -264,6 +286,7 @@ struct DuelCardBoardSection: View {
     let showsHighlight: Bool
     let onSelectCard: (DuelJewelCard, DuelCardSource) -> Void
     let onReserveDeck: (Int) -> Void
+    let onSelectRoyal: (DuelRoyalCard) -> Void
 
     var body: some View {
         ScrollView(.vertical, showsIndicators: false) {
@@ -319,7 +342,10 @@ struct DuelCardBoardSection: View {
             } else {
                 HStack(spacing: 6) {
                     ForEach(duel.availableRoyals) { royal in
-                        DuelRoyalCardView(royal: royal).frame(maxWidth: .infinity)
+                        Button { onSelectRoyal(royal) } label: {
+                            DuelRoyalCardView(royal: royal).frame(maxWidth: .infinity)
+                        }
+                        .buttonStyle(.plain)
                     }
                 }
             }
@@ -328,6 +354,7 @@ struct DuelCardBoardSection: View {
 }
 
 func duelCanPurchase(_ card: DuelJewelCard, player: DuelPublicPlayerSnapshot) -> Bool {
+    // A wild bonus must stack onto an existing gem engine, so it cannot be a first card.
     if card.isWildBonus, !DuelGemColor.allCases.contains(where: { player.bonuses[$0, default: 0] > 0 }) { return false }
     var gold = player.tokens[.gold, default: 0]
     for token in DuelTokenColor.boardTakeable {

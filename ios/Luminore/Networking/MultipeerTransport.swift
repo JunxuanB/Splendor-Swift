@@ -128,7 +128,10 @@ final class MultipeerTransport: NSObject, MatchTransport {
 
     func disconnect(closeRoom: Bool) {
         _ = closeRoom
-        stopBrowsing()
+        // Browsing has its own view-owned lifetime. In particular,
+        // MatchSessionService resets the current session before asking the
+        // transport to join a room. Keep the discovered peer alive across that
+        // reset so the room selected from the nearby list can still be invited.
         advertiser?.stopAdvertisingPeer()
         advertiser?.delegate = nil
         advertiser = nil

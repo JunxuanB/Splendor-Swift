@@ -172,7 +172,7 @@ struct PlayerInventoryBar: View {
     }
 }
 
-private struct TurnProgressBar: View {
+struct TurnProgressBar: View {
     let deadline: Date?
     let duration: Int?
 
