@@ -45,6 +45,9 @@ extension MatchSessionService {
                 )
             }
             kind = .purchase(source: source, card: resolvedCard, noble: noble)
+        case .duel:
+            // Duel views animate directly from authoritative board/card deltas.
+            kind = .pass
         case .pass:
             kind = .pass
         }
@@ -55,10 +58,10 @@ extension MatchSessionService {
         )
     }
 
-    func scheduleGameBroadcast(after delay: TimeInterval, revision: Int) {
+    func scheduleGameBroadcast(after delay: TimeInterval, revision: Int, resetsTurnTimer: Bool = true) {
         animationBroadcastTask?.cancel()
         guard delay > 0 else {
-            scheduleTurnTimer()
+            if resetsTurnTimer { scheduleTurnTimer() }
             broadcastGame()
             return
         }
@@ -67,7 +70,7 @@ extension MatchSessionService {
             guard !Task.isCancelled else { return }
             await MainActor.run {
                 guard let self, self.authoritativeGame?.revision == revision else { return }
-                self.scheduleTurnTimer()
+                if resetsTurnTimer { self.scheduleTurnTimer() }
                 self.broadcastGame()
                 self.animationBroadcastTask = nil
             }

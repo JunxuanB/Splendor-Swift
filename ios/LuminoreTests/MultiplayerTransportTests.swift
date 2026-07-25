@@ -163,6 +163,44 @@ final class MultiplayerTransportTests: XCTestCase {
         }
     }
 
+    func testDuelActionsAndSnapshotsReachEveryTransportMode() throws {
+        for mode in MultiplayerMode.allCases {
+            let hostTransport = FakeMatchTransport(mode: mode)
+            let clientTransport = FakeMatchTransport(mode: mode)
+            hostTransport.other = clientTransport
+            clientTransport.other = hostTransport
+            let host = MatchSessionService(localID: UUID(), nickname: "Host", mode: mode, transport: hostTransport)
+            let client = MatchSessionService(localID: UUID(), nickname: "Guest", mode: mode, transport: clientTransport)
+
+            host.host(roomName: "Duel", password: "")
+            client.join(DiscoveredMatchRoom(descriptor: try XCTUnwrap(host.room?.descriptor)), password: "")
+            host.enterConfiguration()
+            var configuration = try XCTUnwrap(host.room?.configuration)
+            configuration.mode = .duel
+            host.updateConfiguration(configuration)
+            host.startGame()
+            host.openingTurnSelection = OpeningTurnSelection(
+                startedAt: Date().addingTimeInterval(-2),
+                endsAt: Date().addingTimeInterval(-1)
+            )
+            host.scheduleOpeningTurnCompletion()
+
+            let actorID = try XCTUnwrap(host.authoritativeGame?.currentPlayer.id)
+            let duel = try XCTUnwrap(host.authoritativeGame?.duel)
+            let boardIndex = try XCTUnwrap(duel.board.indices.first { duel.board[$0] != .gold })
+            host.apply(.duel(.take(boardIndices: [boardIndex], returning: [:])), from: actorID, allowsPass: true)
+
+            XCTAssertEqual(host.game?.configuration.mode, .duel, "host mode: \(mode)")
+            XCTAssertEqual(client.game?.configuration.mode, .duel, "client mode: \(mode)")
+            XCTAssertEqual(host.game?.duel, client.game?.duel, "snapshot: \(mode)")
+            XCTAssertNil(host.game?.duel?.board[boardIndex], "host board: \(mode)")
+            XCTAssertNil(client.game?.duel?.board[boardIndex], "client board: \(mode)")
+
+            client.leave()
+            host.leave()
+        }
+    }
+
     func testWrongPasswordIsRejectedWithoutLeakingPassword() {
         let hostTransport = FakeMatchTransport(mode: .internet)
         let clientTransport = FakeMatchTransport(mode: .internet)

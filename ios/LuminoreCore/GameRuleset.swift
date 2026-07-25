@@ -103,6 +103,8 @@ public struct StandardRuleset: GameRuleset {
             try applyReserve(source: source, returning: returning, state: &working)
         case let .purchase(source, payment, nobleID):
             try applyPurchase(source: source, payment: payment, nobleID: nobleID, state: &working)
+        case .duel:
+            throw GameRuleError.invalidAction
         case .pass:
             break
         }

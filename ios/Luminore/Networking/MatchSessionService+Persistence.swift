@@ -141,6 +141,9 @@ extension MatchSessionService {
             nickname: substitute.nickname,
             medalCount: substitute.medalCount
         )
+        if let duelIndex = state.duel?.players.firstIndex(where: { $0.id == seatID }) {
+            state.duel?.players[duelIndex].id = substituteID
+        }
         authoritativeGame = state
 
         if let index = room.participants.firstIndex(where: { $0.id == seatID }) {

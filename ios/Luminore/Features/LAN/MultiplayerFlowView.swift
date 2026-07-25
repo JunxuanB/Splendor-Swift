@@ -53,17 +53,19 @@ struct MultiplayerFlowView: View {
         case .configuration:
             ConfigurationView(session: session)
         case .game:
-            GameBoardView(
-                session: session,
-                onExit: {
-                    clearActiveMatch(includeSaved: true)
-                    session.leave()
-                    dismiss()
-                },
-                onSaveAndSuspend: {
-                    session.saveAndSuspend(context: modelContext)
-                }
-            )
+            if session.game?.configuration.mode == .duel {
+                DuelGameBoardView(
+                    session: session,
+                    onExit: exitMatch,
+                    onSaveAndSuspend: { session.saveAndSuspend(context: modelContext) }
+                )
+            } else {
+                GameBoardView(
+                    session: session,
+                    onExit: exitMatch,
+                    onSaveAndSuspend: { session.saveAndSuspend(context: modelContext) }
+                )
+            }
         case .results:
             ResultView(session: session)
         case .reconnecting:
@@ -75,6 +77,12 @@ struct MultiplayerFlowView: View {
                 description: Text("lan.sessionEnded.detail")
             )
         }
+    }
+
+    private func exitMatch() {
+        clearActiveMatch(includeSaved: true)
+        session.leave()
+        dismiss()
     }
 
     var body: some View {

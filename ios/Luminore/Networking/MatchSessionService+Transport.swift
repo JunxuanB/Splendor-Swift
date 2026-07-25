@@ -354,6 +354,15 @@ extension MatchSessionService {
         do {
             let previousState = state
             try rules.apply(action, playerID: playerID, to: &state)
+            let isDuelOptionalAction: Bool
+            if case let .duel(duelAction) = action {
+                switch duelAction {
+                case .spendPrivilege, .replenish: isDuelOptionalAction = true
+                default: isDuelOptionalAction = false
+                }
+            } else {
+                isDuelOptionalAction = false
+            }
             let animation = makeAnimationEvent(
                 for: action,
                 playerID: playerID,
@@ -376,11 +385,17 @@ extension MatchSessionService {
                 medalCount = state.players.first(where: { $0.id == localID })?.medalCount ?? medalCount
                 updateAdvertisement()
             }
-            turnTask?.cancel()
-            turnDeadline = nil
+            if !isDuelOptionalAction {
+                turnTask?.cancel()
+                turnDeadline = nil
+            }
             gameAnimationEvent = animation
             broadcast(.gameAnimation(animation))
-            scheduleGameBroadcast(after: animation.snapshotDelay, revision: state.revision)
+            scheduleGameBroadcast(
+                after: animation.snapshotDelay,
+                revision: state.revision,
+                resetsTurnTimer: !isDuelOptionalAction
+            )
         } catch {
             if playerID == localID {
                 presentedError = error.localizedDescription

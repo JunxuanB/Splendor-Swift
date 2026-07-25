@@ -69,7 +69,7 @@ public enum GameMode: String, CaseIterable, Codable, Sendable {
     case silkRoad
     case duel
 
-    public var isAvailable: Bool { self == .standard }
+    public var isAvailable: Bool { self == .standard || self == .duel }
 }
 
 public struct GameConfiguration: Codable, Equatable, Sendable {
@@ -298,6 +298,7 @@ public struct GameState: Codable, Equatable, Sendable {
     public var status: MatchStatus
     public var result: GameResult?
     public var revision: Int
+    public var duel: DuelGameData? = nil
 
     public var currentPlayer: PlayerState { players[currentPlayerIndex] }
 }
@@ -312,6 +313,7 @@ public enum GameAction: Codable, Equatable, Sendable {
     case take(tokens: [GemColor: Int], returning: [GemColor: Int])
     case reserve(source: CardSource, returning: [GemColor: Int])
     case purchase(source: CardSource, payment: [GemColor: Int], nobleID: String?)
+    case duel(DuelAction)
     case pass
 }
 
@@ -447,6 +449,7 @@ public struct ClientGameSnapshot: Codable, Equatable, Sendable {
     public let revision: Int
     /// Authoritative pause state; `nil` when the match is running.
     public let pause: MatchPause?
+    public let duel: DuelClientSnapshot?
 
     public init(
         gameID: UUID,
@@ -465,7 +468,8 @@ public struct ClientGameSnapshot: Codable, Equatable, Sendable {
         status: MatchStatus,
         result: GameResult?,
         revision: Int,
-        pause: MatchPause? = nil
+        pause: MatchPause? = nil,
+        duel: DuelClientSnapshot? = nil
     ) {
         self.gameID = gameID
         self.configuration = configuration
@@ -484,6 +488,7 @@ public struct ClientGameSnapshot: Codable, Equatable, Sendable {
         self.result = result
         self.revision = revision
         self.pause = pause
+        self.duel = duel
     }
 
     public init(from decoder: Decoder) throws {
@@ -505,6 +510,7 @@ public struct ClientGameSnapshot: Codable, Equatable, Sendable {
         result = try container.decodeIfPresent(GameResult.self, forKey: .result)
         revision = try container.decode(Int.self, forKey: .revision)
         pause = try container.decodeIfPresent(MatchPause.self, forKey: .pause)
+        duel = try container.decodeIfPresent(DuelClientSnapshot.self, forKey: .duel)
     }
 }
 
@@ -515,22 +521,49 @@ public extension GameState {
         openingTurnSelection: OpeningTurnSelection? = nil,
         pause: MatchPause? = nil
     ) -> ClientGameSnapshot {
-        ClientGameSnapshot(
+        let duelSnapshot: DuelClientSnapshot? = duel.map { duel in
+            DuelClientSnapshot(
+                players: duel.players.map {
+                    DuelPublicPlayerSnapshot(
+                        id: $0.id,
+                        tokens: $0.tokens,
+                        purchasedCards: $0.purchasedCards,
+                        royalCards: $0.royalCards,
+                        reservedCardCount: $0.reservedCards.count,
+                        privileges: $0.privileges,
+                        prestige: $0.prestige,
+                        crowns: $0.crowns,
+                        bonuses: $0.bonuses,
+                        colorPrestige: $0.colorPrestige
+                    )
+                },
+                localReservedCards: duel.players.first(where: { $0.id == playerID })?.reservedCards ?? [],
+                board: duel.board,
+                bagCount: duel.bag.count,
+                deckCounts: duel.decks.mapValues(\.count),
+                market: duel.market,
+                availableRoyals: duel.availableRoyals,
+                privilegesInPool: duel.privilegesInPool,
+                turnStage: duel.turnStage
+            )
+        }
+        return ClientGameSnapshot(
             gameID: gameID,
             configuration: configuration,
-            players: players.map {
-                PublicPlayerSnapshot(
-                    id: $0.id,
-                    nickname: $0.nickname,
-                    kind: $0.kind,
-                    medalCount: $0.medalCount,
-                    isConnected: $0.isConnected,
-                    tokens: $0.tokens,
-                    purchasedCards: $0.purchasedCards,
-                    reservedCards: $0.reservedCards,
-                    reservedCardCount: $0.reservedCards.count,
-                    nobles: $0.nobles,
-                    prestige: $0.prestige
+            players: players.map { player in
+                let duelPlayer = duel?.players.first(where: { $0.id == player.id })
+                return PublicPlayerSnapshot(
+                    id: player.id,
+                    nickname: player.nickname,
+                    kind: player.kind,
+                    medalCount: player.medalCount,
+                    isConnected: player.isConnected,
+                    tokens: player.tokens,
+                    purchasedCards: player.purchasedCards,
+                    reservedCards: player.reservedCards,
+                    reservedCardCount: duelPlayer?.reservedCards.count ?? player.reservedCards.count,
+                    nobles: player.nobles,
+                    prestige: duelPlayer?.prestige ?? player.prestige
                 )
             },
             localReservedCards: players.first(where: { $0.id == playerID })?.reservedCards ?? [],
@@ -546,7 +579,8 @@ public extension GameState {
             status: status,
             result: result,
             revision: revision,
-            pause: pause
+            pause: pause,
+            duel: duelSnapshot
         )
     }
 }

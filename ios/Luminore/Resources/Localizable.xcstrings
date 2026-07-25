@@ -1,6 +1,9 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "" : {
+
+    },
     "·" : {
 
     },
@@ -23,6 +26,16 @@
     "%lld / 3" : {
 
     },
+    "%lld,%lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld,%2$lld"
+          }
+        }
+      }
+    },
     "%lld/%lld" : {
       "localizations" : {
         "en" : {
@@ -33,10 +46,19 @@
         }
       }
     },
+    "%lld/3" : {
+
+    },
     "+%lld" : {
 
     },
     "×%lld" : {
+
+    },
+    "2" : {
+
+    },
+    "3/6" : {
 
     },
     "account.history" : {
@@ -647,6 +669,38 @@
         }
       }
     },
+    "config.duel.fixedVictory" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fixed victory: 20 prestige, 10 crowns, or 10 same-color prestige"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "固定胜利条件：20 声望、10 个王冠或同色 10 声望"
+          }
+        }
+      }
+    },
+    "config.duel.requiresTwo" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Requires exactly 2 players"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "仅限恰好 2 位玩家"
+          }
+        }
+      }
+    },
     "config.mode" : {
       "localizations" : {
         "en" : {
@@ -851,6 +905,662 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "等待房主开始游戏…"
+          }
+        }
+      }
+    },
+    "duel.ability.chooseBoardToken" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose the matching token"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "选择要拿取的同色宝石"
+          }
+        }
+      }
+    },
+    "duel.ability.chooseStolen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose a token to steal"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "选择要夺取的宝石"
+          }
+        }
+      }
+    },
+    "duel.ability.extraTurn" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Take another turn"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "再行动一次"
+          }
+        }
+      }
+    },
+    "duel.ability.steal" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Steal 1 Gem or Pearl"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "夺取对手 1 枚宝石或珍珠"
+          }
+        }
+      }
+    },
+    "duel.ability.takeMatching" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Take 1 matching Gem"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "拿取 1 枚同色宝石"
+          }
+        }
+      }
+    },
+    "duel.ability.takePrivilege" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Take 1 Privilege"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "获得 1 个权杖"
+          }
+        }
+      }
+    },
+    "duel.board.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Token board"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "宝石版图"
+          }
+        }
+      }
+    },
+    "duel.card.accessibility %lld %lld %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tier %1$lld card, %2$lld prestige, %3$lld crowns"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld 级发展卡，%2$lld 声望，%3$lld 个王冠"
+          }
+        }
+      }
+    },
+    "duel.card.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jewel card"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "发展卡"
+          }
+        }
+      }
+    },
+    "duel.gem.pearl" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pearl"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "珍珠"
+          }
+        }
+      }
+    },
+    "duel.page.cards" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cards"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "发展卡版图"
+          }
+        }
+      }
+    },
+    "duel.page.picker" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Board"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "版图"
+          }
+        }
+      }
+    },
+    "duel.page.tokens" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tokens"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "宝石版图"
+          }
+        }
+      }
+    },
+    "duel.payment.gold" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gold required"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "所需黄金"
+          }
+        }
+      }
+    },
+    "duel.payment.hint" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reduce a colored payment to substitute Gold for that token, including Pearls."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "减少某种宝石的支付数量，即可改用黄金代替；黄金也可以代替珍珠。"
+          }
+        }
+      }
+    },
+    "duel.payment.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Payment"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "支付方式"
+          }
+        }
+      }
+    },
+    "duel.privilege.choose" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose 1 non-Gold token"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "选择 1 枚非黄金宝石"
+          }
+        }
+      }
+    },
+    "duel.privilege.legend" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opponent gains 1 Privilege: take 3 identical tokens · take 2 Pearls · replenish"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "对手获得 1 个权杖：拿 3 枚同色 · 拿 2 枚珍珠 · 补充版图"
+          }
+        }
+      }
+    },
+    "duel.privilege.use" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Use Privilege"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "使用权杖"
+          }
+        }
+      }
+    },
+    "duel.purchase" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Purchase"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "购买"
+          }
+        }
+      }
+    },
+    "duel.replenish" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Replenish"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "补充版图"
+          }
+        }
+      }
+    },
+    "duel.reserve" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reserve"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "预留"
+          }
+        }
+      }
+    },
+    "duel.reserve.chooseGold" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose a Gold token"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "选择黄金位置"
+          }
+        }
+      }
+    },
+    "duel.reserve.goldPositionHint" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The position matters because removing Gold changes future uninterrupted lines."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "黄金所在位置会影响之后可拿取的连续直线，请明确选择。"
+          }
+        }
+      }
+    },
+    "duel.reserve.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Take Gold and reserve"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "拿取黄金并预留"
+          }
+        }
+      }
+    },
+    "duel.reserved.empty" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No reserved cards"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "暂无预留发展卡"
+          }
+        }
+      }
+    },
+    "duel.reserved.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reserved cards"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "预留的发展卡"
+          }
+        }
+      }
+    },
+    "duel.return.choose" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Return tokens to the bag"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "选择放回袋中的宝石"
+          }
+        }
+      }
+    },
+    "duel.return.remaining" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Still to return"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "还需放回"
+          }
+        }
+      }
+    },
+    "duel.return.required %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You must return %lld tokens to finish with 10."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "回合结束最多持有 10 枚宝石，请放回 %lld 枚。"
+          }
+        }
+      }
+    },
+    "duel.return.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Token limit"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "宝石数量上限"
+          }
+        }
+      }
+    },
+    "duel.royal.choose" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose a Royal card"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "选择王室牌"
+          }
+        }
+      }
+    },
+    "duel.royal.chooseStolen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Royal ability: choose a token to steal"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "王室牌能力：选择要夺取的宝石"
+          }
+        }
+      }
+    },
+    "duel.royal.empty" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "All royal cards claimed"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "皇室卡已全部领取"
+          }
+        }
+      }
+    },
+    "duel.royal.hint" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Claim one at 3 and 6 crowns"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "累计 3/6 个皇冠可选择一张"
+          }
+        }
+      }
+    },
+    "duel.royal.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Royal Cards"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "皇室卡"
+          }
+        }
+      }
+    },
+    "duel.selected" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Selected"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已选择"
+          }
+        }
+      }
+    },
+    "duel.take" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Take"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "拿取"
+          }
+        }
+      }
+    },
+    "duel.wild.choose" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Multicolor bonus"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "多彩奖励选色"
+          }
+        }
+      }
+    },
+    "duel.wild.color" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copy an owned bonus color"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "复制已拥有的奖励颜色"
+          }
+        }
+      }
+    },
+    "duel.yourTurn" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your turn"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "你的回合"
           }
         }
       }
@@ -2713,6 +3423,9 @@
     "https://example.com" : {
 
     },
+    "Ⅰ" : {
+
+    },
     "identity_in_use" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -2729,6 +3442,12 @@
           }
         }
       }
+    },
+    "Ⅱ" : {
+
+    },
+    "Ⅲ" : {
+
     },
     "incompatible_protocol" : {
       "extractionState" : "stale",

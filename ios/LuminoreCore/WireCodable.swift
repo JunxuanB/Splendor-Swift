@@ -15,6 +15,7 @@ private enum WireKeys: String, CodingKey {
     case room
     case configuration
     case action
+    case duelAction
     case animation
     case snapshot
     case message
@@ -53,7 +54,7 @@ extension CardSource {
 }
 
 extension GameAction {
-    private enum Kind: String, Codable { case take, reserve, purchase, pass }
+    private enum Kind: String, Codable { case take, reserve, purchase, duel, pass }
 
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: WireKeys.self)
@@ -74,6 +75,8 @@ extension GameAction {
                 payment: try container.decode([GemColor: Int].self, forKey: .payment),
                 nobleID: try container.decodeIfPresent(String.self, forKey: .nobleID)
             )
+        case .duel:
+            self = .duel(try container.decode(DuelAction.self, forKey: .duelAction))
         case .pass:
             self = .pass
         }
@@ -95,6 +98,9 @@ extension GameAction {
             try container.encode(source, forKey: .source)
             try container.encode(payment, forKey: .payment)
             try container.encodeIfPresent(nobleID, forKey: .nobleID)
+        case let .duel(action):
+            try container.encode(Kind.duel, forKey: .type)
+            try container.encode(action, forKey: .duelAction)
         case .pass:
             try container.encode(Kind.pass, forKey: .type)
         }

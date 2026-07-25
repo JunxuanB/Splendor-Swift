@@ -74,7 +74,7 @@ final class MatchSessionService: ObservableObject {
     var isHost = false
     var isPublic = true
 
-    let rules = StandardRuleset()
+    let rules = RulesEngine()
     var transport: any MatchTransport
     var participantPeers: [UUID: TransportPeerID] = [:]
     var peerParticipants: [TransportPeerID: UUID] = [:]
@@ -227,9 +227,16 @@ final class MatchSessionService: ObservableObject {
 
     func updateConfiguration(_ configuration: GameConfiguration) {
         guard isHost, var room, room.descriptor.stage == .configuration else { return }
+        if configuration.mode == .duel,
+           room.participants.filter(\.isConnected).count != 2 {
+            presentedError = String(localized: "config.duel.requiresTwo")
+            return
+        }
         room.configuration = configuration
+        room.descriptor.maximumPlayers = configuration.mode == .duel ? 2 : 7
         room.revision += 1
         self.room = room
+        updateAdvertisement()
         broadcastRoom()
     }
 

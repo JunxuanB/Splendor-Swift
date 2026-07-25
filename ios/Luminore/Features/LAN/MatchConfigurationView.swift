@@ -8,16 +8,26 @@ struct ConfigurationView: View {
         Form {
             if let room = session.room {
                 Section("config.mode") {
-                    modeRow("config.mode.standard", selected: true, enabled: true)
-                    modeRow("config.mode.silkRoad", selected: false, enabled: false)
-                    modeRow("config.mode.duel", selected: false, enabled: false)
+                    modeRow("config.mode.standard", mode: .standard, enabled: true, configuration: room.configuration)
+                    modeRow("config.mode.silkRoad", mode: .silkRoad, enabled: false, configuration: room.configuration)
+                    modeRow(
+                        "config.mode.duel",
+                        mode: .duel,
+                        enabled: room.participants.filter(\.isConnected).count == 2,
+                        configuration: room.configuration
+                    )
                 }
                 Section("config.rules") {
-                    Stepper(
-                        value: scoreBinding(room.configuration),
-                        in: 10 ... 30
-                    ) {
-                        LabeledContent("config.targetScore", value: "\(room.configuration.targetPrestige)")
+                    if room.configuration.mode == .standard {
+                        Stepper(
+                            value: scoreBinding(room.configuration),
+                            in: 10 ... 30
+                        ) {
+                            LabeledContent("config.targetScore", value: "\(room.configuration.targetPrestige)")
+                        }
+                    } else if room.configuration.mode == .duel {
+                        Label("config.duel.fixedVictory", systemImage: "crown")
+                            .font(.footnote)
                     }
                     Toggle("config.timer.enabled", isOn: timerEnabledBinding(room.configuration))
                     if let seconds = room.configuration.turnDurationSeconds {
@@ -39,7 +49,7 @@ struct ConfigurationView: View {
                     Text("config.affordableCardHighlight.description")
                         .font(.footnote)
                         .foregroundStyle(.secondary)
-                    if room.participants.count > 4 {
+                    if room.configuration.mode == .standard, room.participants.count > 4 {
                         Label("config.customLargeTable", systemImage: "person.3.fill")
                             .foregroundStyle(.orange)
                     }
@@ -71,14 +81,29 @@ struct ConfigurationView: View {
         .navigationTitle("config.title")
     }
 
-    private func modeRow(_ title: LocalizedStringKey, selected: Bool, enabled: Bool) -> some View {
-        HStack {
-            Text(title)
-            Spacer()
-            if !enabled { Text("common.comingSoon").font(.caption).foregroundStyle(.secondary) }
-            Image(systemName: selected ? "checkmark.circle.fill" : "circle")
-                .foregroundStyle(selected ? Color.accentColor : Color.secondary.opacity(0.45))
+    private func modeRow(
+        _ title: LocalizedStringKey,
+        mode: GameMode,
+        enabled: Bool,
+        configuration: GameConfiguration
+    ) -> some View {
+        Button {
+            update(configuration) { $0.mode = mode }
+        } label: {
+            HStack {
+                Text(title).foregroundStyle(.primary)
+                Spacer()
+                if !enabled {
+                    Text(mode == .duel ? "config.duel.requiresTwo" : "common.comingSoon")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                Image(systemName: configuration.mode == mode ? "checkmark.circle.fill" : "circle")
+                    .foregroundStyle(configuration.mode == mode ? Color.accentColor : Color.secondary.opacity(0.45))
+            }
         }
+        .buttonStyle(.plain)
+        .disabled(!enabled)
     }
 
     private func scoreBinding(_ configuration: GameConfiguration) -> Binding<Int> {
