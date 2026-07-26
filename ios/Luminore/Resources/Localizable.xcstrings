@@ -5217,6 +5217,54 @@
           }
         }
       }
+    },
+    "duel.notice.stealFromYou %@ %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ stole your %2$@"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ 夺走了你的 %2$@ 宝石"
+          }
+        }
+      }
+    },
+    "duel.notice.stealByYou %@ %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You stole %1$@'s %2$@"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "你夺走了 %1$@ 的 %2$@ 宝石"
+          }
+        }
+      }
+    },
+    "duel.bonus.pointsOnly": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Prestige only — no gem bonus"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "仅获取分数"
+          }
+        }
+      }
     }
   },
   "version": "1.0"

@@ -31,6 +31,7 @@ final class DemoGameStateTests: XCTestCase {
         state.confirmGemSelection()
 
         XCTAssertEqual(state.bank[.ruby], bankBefore - 1)
+        for flight in state.flights { state.land(flight) }
         XCTAssertEqual(state.playerTokens[.ruby], playerBefore + 1)
         XCTAssertTrue(state.selectedGems.isEmpty)
     }

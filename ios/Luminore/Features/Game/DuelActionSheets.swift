@@ -303,16 +303,23 @@ struct DuelPurchaseSheet: View {
     }
 
     private var bonusCapsule: some View {
-        let tint = card.isWildBonus ? Color.purple : (card.bonusColor?.tint ?? .gray)
+        let gold = Color(red: 0.80, green: 0.62, blue: 0.20)
+        let hasBonus = card.isWildBonus || card.bonusColor != nil
+        let tint = card.isWildBonus ? Color.purple : (card.bonusColor?.tint ?? gold)
         return HStack(spacing: 7) {
-            Image(systemName: card.isWildBonus ? "sparkles" : (card.bonusColor?.iconName ?? "questionmark"))
+            Image(systemName: hasBonus ? (card.isWildBonus ? "sparkles" : (card.bonusColor?.iconName ?? "questionmark")) : "crown.fill")
                 .foregroundStyle(tint)
             VStack(alignment: .leading, spacing: 0) {
-                Text("duel.bonus.permanent").font(.caption).foregroundStyle(.secondary)
-                if card.isWildBonus {
-                    Text("duel.bonus.wild")
-                } else if let color = card.bonusColor {
-                    Text("\(card.bonusAmount) × ") + Text(color.localizedKey)
+                if hasBonus {
+                    Text("duel.bonus.permanent").font(.caption).foregroundStyle(.secondary)
+                    if card.isWildBonus {
+                        Text("duel.bonus.wild")
+                    } else if let color = card.bonusColor {
+                        Text("\(card.bonusAmount) × ") + Text(color.localizedKey)
+                    }
+                } else {
+                    // Prestige-only card: no permanent gem bonus.
+                    Text("duel.bonus.pointsOnly")
                 }
             }
             if card.crowns > 0 { DuelCardCrowns(count: card.crowns, size: 13) }
@@ -320,7 +327,7 @@ struct DuelPurchaseSheet: View {
         .font(.subheadline.weight(.semibold))
         .padding(.horizontal, 12)
         .padding(.vertical, 7)
-        .background(tint.opacity(0.12), in: Capsule())
+        .background(tint.opacity(hasBonus ? 0.12 : 0.18), in: Capsule())
     }
 
     @ViewBuilder private var choiceSections: some View {

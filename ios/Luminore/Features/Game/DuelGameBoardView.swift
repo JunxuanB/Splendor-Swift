@@ -28,8 +28,10 @@ struct DuelGameBoardView: View {
     @State private var showsReserved = false
     @State private var showsExitConfirmation = false
     @State private var showsSkipConfirmation = false
-    @State private var extraTurnNotice: DuelExtraTurnNotice?
-    @State private var lastPurchaseCounts: [UUID: Int] = [:]
+    @State private var duelNotice: DuelActionNotice?
+    @State private var flights: [DuelFlight] = []
+    @State private var bursts: [DuelBurst] = []
+    @State private var lastDuel: DuelClientSnapshot?
     @State private var lastCurrentPlayerID: UUID?
     @State private var showsDeveloperGemEditor = false
     @State private var developerTokens: [DuelTokenColor: Int] = [:]
@@ -108,6 +110,25 @@ struct DuelGameBoardView: View {
                 inventoryBar(for: localPlayer)
             }
         }
+        .overlayPreferenceValue(DuelAnchorKey.self) { anchors in
+            GeometryReader { proxy in
+                DuelFlightLayer(
+                    flights: flights,
+                    bursts: bursts,
+                    anchors: anchors,
+                    proxy: proxy,
+                    onFlightEnded: { id in flights.removeAll { $0.id == id } },
+                    onFlightResolved: { id, start, end in
+                        if let i = flights.firstIndex(where: { $0.id == id }) {
+                            flights[i].resolvedStart = start
+                            flights[i].resolvedEnd = end
+                        }
+                    },
+                    onBurstEnded: { id in bursts.removeAll { $0.id == id } }
+                )
+            }
+            .allowsHitTesting(false)
+        }
         .overlay { if isLocalTurn { CurrentTurnBorder() } }
         .overlay {
             if isLocalTurn, snapshot?.configuration.turnGracePeriodEnabled == true, let deadline = session.turnDeadline {
@@ -162,7 +183,7 @@ struct DuelGameBoardView: View {
         .onChange(of: snapshot?.revision) { _, _ in
             selectedIndices = []
             privilegeMode = false
-            detectExtraTurn()
+            handleSnapshotChange()
         }
         .onChange(of: snapshot?.currentPlayerID) { _, playerID in
             if playerID != session.localID {
@@ -178,41 +199,181 @@ struct DuelGameBoardView: View {
             Button("duel.skipTurn", role: .destructive) { session.submit(.pass) }
         } message: { Text("duel.skipTurn.message") }
         .overlay(alignment: .top) {
-            if let notice = extraTurnNotice {
-                DuelExtraTurnBanner(notice: notice)
+            if let notice = duelNotice {
+                DuelActionNoticeBanner(notice: notice)
                     .padding(.top, 8)
                     .transition(.move(edge: .top).combined(with: .opacity))
                     .zIndex(20)
             }
         }
-        .animation(.snappy, value: extraTurnNotice)
-        .task(id: extraTurnNotice) {
-            guard extraTurnNotice != nil else { return }
+        .animation(.snappy, value: duelNotice)
+        .task(id: duelNotice) {
+            guard duelNotice != nil else { return }
             try? await Task.sleep(for: .seconds(2.5))
-            extraTurnNotice = nil
+            duelNotice = nil
         }
         .sensoryFeedback(trigger: isLocalTurn) { old, new in !old && new ? .success : nil }
-        .sensoryFeedback(.success, trigger: extraTurnNotice != nil)
+        .sensoryFeedback(.impact, trigger: duelNotice) { _, new in new != nil }
     }
 
-    /// Detects the "再来一回合" (extra turn) grant across authoritative snapshots and
-    /// shows a banner on every player's screen. An extra turn is the only case where a
-    /// player's purchased-card count grows while they remain the current player — a
-    /// normal purchase passes the turn, and privilege/replenish keep the turn but add
-    /// no card. Derived client-side because Duel actions carry no animation payload.
-    private func detectExtraTurn() {
+    /// Single entry point for reacting to a new authoritative snapshot: diff the
+    /// previous Duel snapshot against the current one to drive both the ability
+    /// banners and the flight animations. Duel actions carry no animation payload,
+    /// so everything is derived client-side and therefore identical across transports.
+    private func handleSnapshotChange() {
         guard let duel, let snapshot else { return }
-        let counts = Dictionary(uniqueKeysWithValues: duel.players.map { ($0.id, $0.purchasedCards.count) })
         let current = snapshot.currentPlayerID
+        let before = lastDuel
         defer {
-            lastPurchaseCounts = counts
+            lastDuel = duel
             lastCurrentPlayerID = current
         }
-        guard lastCurrentPlayerID == current,
-              let previous = lastPurchaseCounts[current], let now = counts[current], now > previous
+        guard let before else { return } // seed only on the first snapshot
+        let actorID = duelActor(before: before, after: duel)
+        detectDuelNotices(before: before, after: duel, snapshot: snapshot, actorID: actorID)
+        buildFlights(before: before, after: duel, actorID: actorID)
+    }
+
+    /// The player who acted: the one whose purchased-card count grew (a purchase),
+    /// otherwise the player whose turn it just was (take / reserve / privilege /
+    /// replenish). Reused by both notices and flights so they always agree.
+    private func duelActor(before: DuelClientSnapshot, after: DuelClientSnapshot) -> UUID? {
+        if let grew = after.players.first(where: { p in
+            p.purchasedCards.count > (before.players.first { $0.id == p.id }?.purchasedCards.count ?? p.purchasedCards.count)
+        }) {
+            return grew.id
+        }
+        return lastCurrentPlayerID
+    }
+
+    /// Announces steal / 再来一回合 on every player's screen. Both only ever result
+    /// from a purchase; a steal is unambiguous because during someone else's turn the
+    /// victim can only lose tokens by being stolen from.
+    private func detectDuelNotices(
+        before: DuelClientSnapshot,
+        after: DuelClientSnapshot,
+        snapshot: ClientGameSnapshot,
+        actorID: UUID?
+    ) {
+        guard let actorID,
+              let beforeActor = before.players.first(where: { $0.id == actorID }),
+              let afterActor = after.players.first(where: { $0.id == actorID }),
+              afterActor.purchasedCards.count > beforeActor.purchasedCards.count
         else { return }
-        let name = snapshot.players.first { $0.id == current }?.nickname ?? ""
-        extraTurnNotice = DuelExtraTurnNotice(playerName: name, isLocal: current == session.localID)
+        let actorName = snapshot.players.first { $0.id == actorID }?.nickname ?? ""
+        let isLocalActor = actorID == session.localID
+
+        if let victim = after.players.first(where: { $0.id != actorID }),
+           let victimBefore = before.players.first(where: { $0.id == victim.id }) {
+            let stolen = DuelTokenColor.allCases.reduce(into: [DuelTokenColor: Int]()) { result, color in
+                let delta = (victimBefore.tokens[color] ?? 0) - (victim.tokens[color] ?? 0)
+                if delta > 0 { result[color] = delta }
+            }
+            if let top = stolen.max(by: { $0.value < $1.value }) {
+                duelNotice = DuelActionNotice(
+                    kind: .steal(color: top.key, count: stolen.values.reduce(0, +)),
+                    actorName: actorName,
+                    victimName: snapshot.players.first { $0.id == victim.id }?.nickname ?? "",
+                    isLocalActor: isLocalActor
+                )
+                return
+            }
+        }
+
+        if snapshot.currentPlayerID == actorID {
+            duelNotice = DuelActionNotice(kind: .extraTurn, actorName: actorName, victimName: "", isLocalActor: isLocalActor)
+        }
+    }
+
+    /// Builds ghost-token / card flights from the snapshot delta, mirroring the
+    /// 4-player game's flight feel. Every endpoint is a persistent position so the
+    /// flights resolve even though the board already shows the new state.
+    private func buildFlights(before: DuelClientSnapshot, after: DuelClientSnapshot, actorID: UUID?) {
+        guard before.board.count == after.board.count else { return }
+        var newFlights: [DuelFlight] = []
+        var newBursts: [DuelBurst] = []
+
+        // Board cell deltas: replenished cells pop from the bag (staggered by spiral
+        // order); emptied cells fly their gem to whoever took it.
+        for i in after.board.indices {
+            switch (before.board[i], after.board[i]) {
+            case let (nil, .some(color)):
+                let order = DuelRules.spiralOrder.firstIndex(of: i) ?? 0
+                newFlights.append(DuelFlight(kind: .gem(color), from: .bag, to: .boardCell(i), delay: Double(order) * 0.045))
+            case let (.some(color), nil):
+                if let actorID {
+                    newFlights.append(DuelFlight(kind: .gem(color), from: .boardCell(i), to: .token(actorID, color)))
+                }
+            default:
+                break
+            }
+        }
+
+        // Steal: the victim's lost tokens fly to the thief.
+        if let actorID, let victim = after.players.first(where: { $0.id != actorID }),
+           let victimBefore = before.players.first(where: { $0.id == victim.id }) {
+            for color in DuelTokenColor.allCases {
+                let delta = (victimBefore.tokens[color] ?? 0) - (victim.tokens[color] ?? 0)
+                for _ in 0 ..< max(0, delta) {
+                    newFlights.append(DuelFlight(kind: .gem(color), from: .token(victim.id, color), to: .token(actorID, color)))
+                }
+            }
+        }
+
+        // Card purchase / reserve: the card flies to the score / reserved area + sparkle.
+        if let actorID,
+           let beforeActor = before.players.first(where: { $0.id == actorID }),
+           let afterActor = after.players.first(where: { $0.id == actorID }) {
+            let beforePurchased = Set(beforeActor.purchasedCards.map(\.id))
+            let boughtCard = afterActor.purchasedCards.first { !beforePurchased.contains($0.id) }?.card
+            if let boughtCard {
+                let source = marketSlotAnchor(cardID: boughtCard.id, in: before) ?? .reserved(actorID)
+                newFlights.append(DuelFlight(kind: .card(boughtCard), from: source, to: .score(actorID), delay: 0.08))
+                newBursts.append(DuelBurst(at: .score(actorID)))
+            }
+            if afterActor.reservedCardCount > beforeActor.reservedCardCount {
+                if let vanished = vanishedMarketCard(before: before, after: after, excluding: boughtCard?.id) {
+                    newFlights.append(DuelFlight(kind: .card(vanished.card), from: .marketSlot(vanished.tier, vanished.index), to: .reserved(actorID), delay: 0.08))
+                }
+                newBursts.append(DuelBurst(at: .reserved(actorID)))
+            }
+        }
+
+        guard !newFlights.isEmpty || !newBursts.isEmpty else { return }
+        let addedFlights = newFlights.map(\.id)
+        let addedBursts = newBursts.map(\.id)
+        flights.append(contentsOf: newFlights)
+        bursts.append(contentsOf: newBursts)
+        // Belt-and-suspenders: drop this batch even if an endpoint never resolved
+        // (e.g. the card page wasn't on screen when the flight was queued).
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) {
+            flights.removeAll { addedFlights.contains($0.id) }
+            bursts.removeAll { addedBursts.contains($0.id) }
+        }
+    }
+
+    private func marketSlotAnchor(cardID: String, in snap: DuelClientSnapshot) -> DuelAnchorID? {
+        for tier in [1, 2, 3] {
+            if let index = snap.market[tier]?.firstIndex(where: { $0.id == cardID }) {
+                return .marketSlot(tier, index)
+            }
+        }
+        return nil
+    }
+
+    private func vanishedMarketCard(
+        before: DuelClientSnapshot,
+        after: DuelClientSnapshot,
+        excluding: String?
+    ) -> (card: DuelJewelCard, tier: Int, index: Int)? {
+        let afterIDs = Set([1, 2, 3].flatMap { after.market[$0] ?? [] }.map(\.id))
+        for tier in [1, 2, 3] {
+            for (index, card) in (before.market[tier] ?? []).enumerated()
+            where !afterIDs.contains(card.id) && card.id != excluding {
+                return (card, tier, index)
+            }
+        }
+        return nil
     }
 
     private var pagePicker: some View {
@@ -346,32 +507,57 @@ struct DuelGameBoardView: View {
     }
 }
 
-struct DuelExtraTurnNotice: Identifiable, Equatable {
+struct DuelActionNotice: Identifiable, Equatable {
+    enum Kind: Equatable {
+        case extraTurn
+        case steal(color: DuelTokenColor, count: Int)
+    }
+
     let id = UUID()
-    let playerName: String
-    let isLocal: Bool
+    let kind: Kind
+    let actorName: String
+    let victimName: String
+    let isLocalActor: Bool
 }
 
-/// Transient banner announcing a 再来一回合 (extra turn) grant to every player.
-struct DuelExtraTurnBanner: View {
-    let notice: DuelExtraTurnNotice
+/// Transient banner announcing an ability trigger (steal / 再来一回合) to every player.
+struct DuelActionNoticeBanner: View {
+    let notice: DuelActionNotice
 
     var body: some View {
-        Label {
-            if notice.isLocal {
-                Text("duel.extraTurn.you")
-            } else {
-                Text("duel.extraTurn.player \(notice.playerName)")
-            }
-        } icon: {
-            Image(systemName: "arrow.clockwise.circle.fill")
+        Label { Text(message) } icon: { Image(systemName: iconName) }
+            .font(.subheadline.weight(.bold))
+            .foregroundStyle(.white)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 10)
+            .background(background, in: Capsule())
+            .shadow(color: .black.opacity(0.25), radius: 8, y: 3)
+            .accessibilityAddTraits(.isStaticText)
+    }
+
+    private var message: LocalizedStringKey {
+        switch notice.kind {
+        case .extraTurn:
+            return notice.isLocalActor ? "duel.extraTurn.you" : "duel.extraTurn.player \(notice.actorName)"
+        case let .steal(color, _):
+            let gem = color.localizedName
+            return notice.isLocalActor
+                ? "duel.notice.stealByYou \(notice.victimName) \(gem)"
+                : "duel.notice.stealFromYou \(notice.actorName) \(gem)"
         }
-        .font(.subheadline.weight(.bold))
-        .foregroundStyle(.white)
-        .padding(.horizontal, 16)
-        .padding(.vertical, 10)
-        .background(Color.accentColor, in: Capsule())
-        .shadow(color: .black.opacity(0.25), radius: 8, y: 3)
-        .accessibilityAddTraits(.isStaticText)
+    }
+
+    private var iconName: String {
+        switch notice.kind {
+        case .extraTurn: "arrow.clockwise.circle.fill"
+        case .steal: "arrow.left.arrow.right.circle.fill"
+        }
+    }
+
+    private var background: Color {
+        switch notice.kind {
+        case .extraTurn: .accentColor
+        case .steal: Color(red: 0.82, green: 0.22, blue: 0.28)
+        }
     }
 }

@@ -26,6 +26,12 @@
 		A10000000000000000000011 /* DuelSheets.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000013 /* DuelSheets.swift */; };
 		A10000000000000000000012 /* DuelFlightSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000014 /* DuelFlightSupport.swift */; };
 		A10000000000000000000013 /* DuelGameStateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000015 /* DuelGameStateTests.swift */; };
+		A10000000000000000000014 /* SilkRoadModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000016 /* SilkRoadModels.swift */; };
+		A10000000000000000000015 /* SilkRoadGameState.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000017 /* SilkRoadGameState.swift */; };
+		A10000000000000000000016 /* SilkRoadGameBoardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000018 /* SilkRoadGameBoardView.swift */; };
+		A10000000000000000000017 /* SilkRoadBoardSections.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000019 /* SilkRoadBoardSections.swift */; };
+		A10000000000000000000018 /* SilkRoadSheets.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000000000000000000001A /* SilkRoadSheets.swift */; };
+		A10000000000000000000019 /* SilkRoadGameStateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000000000000000000001B /* SilkRoadGameStateTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -60,6 +66,12 @@
 		A20000000000000000000013 /* DuelSheets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DuelSheets.swift; sourceTree = "<group>"; };
 		A20000000000000000000014 /* DuelFlightSupport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DuelFlightSupport.swift; sourceTree = "<group>"; };
 		A20000000000000000000015 /* DuelGameStateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DuelGameStateTests.swift; sourceTree = "<group>"; };
+		A20000000000000000000016 /* SilkRoadModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SilkRoadModels.swift; sourceTree = "<group>"; };
+		A20000000000000000000017 /* SilkRoadGameState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SilkRoadGameState.swift; sourceTree = "<group>"; };
+		A20000000000000000000018 /* SilkRoadGameBoardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SilkRoadGameBoardView.swift; sourceTree = "<group>"; };
+		A20000000000000000000019 /* SilkRoadBoardSections.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SilkRoadBoardSections.swift; sourceTree = "<group>"; };
+		A2000000000000000000001A /* SilkRoadSheets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SilkRoadSheets.swift; sourceTree = "<group>"; };
+		A2000000000000000000001B /* SilkRoadGameStateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SilkRoadGameStateTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -106,6 +118,7 @@
 				A20000000000000000000002 /* GameModels.swift */,
 				A20000000000000000000003 /* DemoGameState.swift */,
 				A70000000000000000000008 /* Duel */,
+				A7000000000000000000000A /* SilkRoad */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -119,6 +132,15 @@
 			path = Duel;
 			sourceTree = "<group>";
 		};
+		A7000000000000000000000A /* SilkRoad */ = {
+			isa = PBXGroup;
+			children = (
+				A20000000000000000000016 /* SilkRoadModels.swift */,
+				A20000000000000000000017 /* SilkRoadGameState.swift */,
+			);
+			path = SilkRoad;
+			sourceTree = "<group>";
+		};
 		A70000000000000000000004 /* Views */ = {
 			isa = PBXGroup;
 			children = (
@@ -126,6 +148,7 @@
 				A20000000000000000000005 /* GameBoardView.swift */,
 				A70000000000000000000005 /* Components */,
 				A70000000000000000000009 /* Duel */,
+				A7000000000000000000000B /* SilkRoad */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -143,6 +166,16 @@
 			path = Duel;
 			sourceTree = "<group>";
 		};
+		A7000000000000000000000B /* SilkRoad */ = {
+			isa = PBXGroup;
+			children = (
+				A20000000000000000000018 /* SilkRoadGameBoardView.swift */,
+				A20000000000000000000019 /* SilkRoadBoardSections.swift */,
+				A2000000000000000000001A /* SilkRoadSheets.swift */,
+			);
+			path = SilkRoad;
+			sourceTree = "<group>";
+		};
 		A70000000000000000000005 /* Components */ = {
 			isa = PBXGroup;
 			children = (
@@ -158,6 +191,7 @@
 			children = (
 				A20000000000000000000009 /* DemoGameStateTests.swift */,
 				A20000000000000000000015 /* DuelGameStateTests.swift */,
+				A2000000000000000000001B /* SilkRoadGameStateTests.swift */,
 			);
 			path = SplendorUIDemoTests;
 			sourceTree = "<group>";
@@ -279,6 +313,11 @@
 				A10000000000000000000010 /* DuelCardCarousel.swift in Sources */,
 				A10000000000000000000011 /* DuelSheets.swift in Sources */,
 				A10000000000000000000012 /* DuelFlightSupport.swift in Sources */,
+				A10000000000000000000014 /* SilkRoadModels.swift in Sources */,
+				A10000000000000000000015 /* SilkRoadGameState.swift in Sources */,
+				A10000000000000000000016 /* SilkRoadGameBoardView.swift in Sources */,
+				A10000000000000000000017 /* SilkRoadBoardSections.swift in Sources */,
+				A10000000000000000000018 /* SilkRoadSheets.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -288,6 +327,7 @@
 			files = (
 				A10000000000000000000009 /* DemoGameStateTests.swift in Sources */,
 				A10000000000000000000013 /* DuelGameStateTests.swift in Sources */,
+				A10000000000000000000019 /* SilkRoadGameStateTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

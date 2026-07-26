@@ -53,12 +53,14 @@ struct DuelOpponentPanel: View {
                 }
                 Spacer(minLength: 0)
                 stat("\(duelPlayer.prestige)", icon: "trophy", tint: .blue)
+                    .duelFlightAnchor(.score(duelPlayer.id))
                 Divider().frame(height: 24)
                 stat("\(duelPlayer.crowns)", icon: "crown", tint: .orange)
                 Divider().frame(height: 24)
                 stat("\(duelPlayer.colorPrestige.values.max() ?? 0)", icon: "paintpalette", tint: .purple)
                 Divider().frame(height: 24)
                 stat("\(duelPlayer.reservedCardCount)/3", icon: "rectangle.stack", tint: .secondary)
+                    .duelFlightAnchor(.reserved(duelPlayer.id))
                 Divider().frame(height: 24)
                 stat("\(duelPlayer.privileges)", icon: "wand.and.stars", tint: .purple)
             }
@@ -94,11 +96,13 @@ struct DuelPlayerInventoryBar: View {
             Button(action: onOpenReserved) {
                 VStack(alignment: .leading, spacing: 3) {
                     Text("\(player.prestige)").font(.title2.bold().monospacedDigit())
+                        .duelFlightAnchor(.score(player.id))
                     Label("\(player.crowns)", systemImage: "crown").foregroundStyle(.orange)
                     HStack(spacing: 2) {
                         Text("\(player.reservedCardCount)/3")
                         Image(systemName: "chevron.up").font(.system(size: 8, weight: .bold))
                     }
+                    .duelFlightAnchor(.reserved(player.id))
                 }
                 .font(.caption.bold())
                 .frame(width: 48, alignment: .leading)
@@ -123,7 +127,7 @@ struct DuelPlayerInventoryBar: View {
     }
 }
 
-@ViewBuilder
+@MainActor @ViewBuilder
 private func resourceRow(_ player: DuelPublicPlayerSnapshot) -> some View {
     HStack(spacing: 4) {
         ForEach(DuelTokenColor.allCases) { color in
@@ -133,6 +137,7 @@ private func resourceRow(_ player: DuelPublicPlayerSnapshot) -> some View {
                 tokens: player.tokens[color, default: 0]
             )
             .frame(maxWidth: .infinity)
+            .duelFlightAnchor(.token(player.id, color))
         }
     }
 }
@@ -173,7 +178,7 @@ struct DuelTokenBoardSection: View {
                     .font(.caption2.bold())
                     .foregroundStyle(privilegeMode ? Color.accentColor : .secondary)
                 Spacer()
-                info(icon: "bag", text: "\(duel.bagCount)")
+                info(icon: "bag", text: "\(duel.bagCount)").duelFlightAnchor(.bag)
                 info(icon: "wand.and.stars", text: "\(duel.privilegesInPool)")
             }
 
@@ -189,12 +194,14 @@ struct DuelTokenBoardSection: View {
                                     dimmed: !isLocalTurn || color == .gold
                                 )
                                 .frame(maxWidth: .infinity)
+                                .duelFlightAnchor(.boardCell(index))
                             }
                             .buttonStyle(.plain)
                             .disabled(!isLocalTurn)
                         } else {
                             Circle().strokeBorder(.primary.opacity(0.08), style: StrokeStyle(lineWidth: 1, dash: [3, 3]))
                                 .frame(width: 46, height: 46).frame(maxWidth: .infinity)
+                                .duelFlightAnchor(.boardCell(index))
                         }
                     }
                 }
@@ -306,14 +313,17 @@ struct DuelCardBoardSection: View {
                         .buttonStyle(.plain)
                         .disabled(!isLocalTurn || duel.deckCounts[tier, default: 0] == 0 || player.reservedCardCount >= 3
                                   || !duel.board.contains(.gold))
+                        .duelFlightAnchor(.deck(tier))
 
-                        ForEach(duel.market[tier, default: []]) { card in
+                        ForEach(Array((duel.market[tier, default: []]).enumerated()), id: \.element.id) { index, card in
                             Button { onSelectCard(card, .market(cardID: card.id)) } label: {
                                 DuelJewelCardView(
                                     card: card,
                                     affordable: showsHighlight && duelCanPurchase(card, player: player)
                                 )
-                            }.buttonStyle(.plain)
+                            }
+                            .buttonStyle(.plain)
+                            .duelFlightAnchor(.marketSlot(tier, index))
                         }
                         Spacer(minLength: 0)
                     }

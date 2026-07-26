@@ -45,6 +45,19 @@ extension DuelTokenColor {
         case .gold: "gem.gold"
         }
     }
+
+    /// Resolved gem name, for interpolating into other localized strings (e.g. banners).
+    var localizedName: String {
+        switch self {
+        case .diamond: String(localized: "gem.diamond")
+        case .sapphire: String(localized: "gem.sapphire")
+        case .emerald: String(localized: "gem.emerald")
+        case .ruby: String(localized: "gem.ruby")
+        case .onyx: String(localized: "gem.onyx")
+        case .pearl: String(localized: "duel.gem.pearl")
+        case .gold: String(localized: "gem.gold")
+        }
+    }
 }
 
 extension DuelGemColor {

@@ -47,6 +47,14 @@ struct EntryView: View {
                         }
                         .buttonStyle(.bordered)
                         .buttonBorderShape(.roundedRectangle(radius: 16))
+
+                        NavigationLink {
+                            SilkRoadGameBoardView()
+                        } label: {
+                            entryLabel(title: "进入丝绸之路演示", systemImage: "map.fill")
+                        }
+                        .buttonStyle(.bordered)
+                        .buttonBorderShape(.roundedRectangle(radius: 16))
                     }
 
                     Text("所有数据仅用于界面演示")
