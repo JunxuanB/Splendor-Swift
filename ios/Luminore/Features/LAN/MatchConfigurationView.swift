@@ -55,16 +55,6 @@ struct ConfigurationView: View {
                     }
                 }
                 .disabled(!session.isHost)
-                Section("config.ai") {
-                    Toggle("config.ai.add", isOn: .constant(false)).disabled(true)
-                    Picker("config.ai.difficulty", selection: .constant(BotDifficulty.normal)) {
-                        Text("config.ai.easy").tag(BotDifficulty.easy)
-                        Text("config.ai.normal").tag(BotDifficulty.normal)
-                        Text("config.ai.hard").tag(BotDifficulty.hard)
-                    }
-                    .disabled(true)
-                    Text("common.comingSoon").font(.footnote).foregroundStyle(.secondary)
-                }
                 if session.isHost {
                     Section {
                         Button("config.start") { session.startGame() }

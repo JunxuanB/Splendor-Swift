@@ -124,6 +124,21 @@ final class DuelRulesetTests: XCTestCase {
         XCTAssertTrue(state.snapshot(for: state.players[1 - actorIndex].id).duel?.localReservedCards.isEmpty == true)
     }
 
+    func testSnapshotIncludesBagTokenCounts() throws {
+        var state = try makeGame()
+        state.duel!.bag = [.diamond, .diamond, .pearl, .gold]
+
+        let clientSnapshot = state.snapshot(for: state.currentPlayer.id)
+        let snapshot = try XCTUnwrap(clientSnapshot.duel)
+
+        XCTAssertEqual(snapshot.bagCount, 4)
+        XCTAssertEqual(snapshot.bagTokenCounts, [.diamond: 2, .pearl: 1, .gold: 1])
+
+        let wireData = try JSONEncoder().encode(clientSnapshot)
+        let decoded = try JSONDecoder().decode(ClientGameSnapshot.self, from: wireData)
+        XCTAssertEqual(decoded.duel?.bagTokenCounts, snapshot.bagTokenCounts)
+    }
+
     func testWildBonusCannotBeFirstCardAndMustCopyOwnedNormalColor() throws {
         var state = try makeGame()
         let actor = state.currentPlayer.id

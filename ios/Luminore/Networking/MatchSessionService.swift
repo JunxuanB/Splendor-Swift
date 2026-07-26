@@ -97,6 +97,9 @@ final class MatchSessionService: ObservableObject {
     var seenMessageIDs: Set<UUID> = []
     var turnTask: Task<Void, Never>?
     var openingTurnTask: Task<Void, Never>?
+    /// Host-side task that computes and applies the current bot seat's move.
+    /// Cancelled and rescheduled whenever the authoritative game advances.
+    var botTask: Task<Void, Never>?
     var reconnectTask: Task<Void, Never>?
     var animationBroadcastTask: Task<Void, Never>?
     /// Host-side pause truth (the client mirrors `matchPause` from the snapshot).
@@ -280,6 +283,7 @@ final class MatchSessionService: ObservableObject {
         authoritativeGame = nil
         game = nil
         openingTurnTask?.cancel()
+        botTask?.cancel()
         openingTurnSelection = nil
         clearPauseState()
         isAwaitingResumeAssignment = false
@@ -305,6 +309,7 @@ final class MatchSessionService: ObservableObject {
         isLeaving = true
         turnTask?.cancel()
         openingTurnTask?.cancel()
+        botTask?.cancel()
         reconnectTask?.cancel()
         animationBroadcastTask?.cancel()
         disconnectGraceTask?.cancel()
@@ -341,6 +346,7 @@ final class MatchSessionService: ObservableObject {
         guard isHost, phase == .game, !isPaused, !isOpeningTurnSelection else { return }
         hostPaused = true
         turnTask?.cancel()
+        botTask?.cancel()
         turnDeadline = nil
         recomputePauseAndBroadcast()
     }
@@ -356,6 +362,7 @@ final class MatchSessionService: ObservableObject {
             recomputePause()
             scheduleTurnTimer()
             broadcastGame()
+            scheduleBotTurnIfNeeded()
         }
     }
 

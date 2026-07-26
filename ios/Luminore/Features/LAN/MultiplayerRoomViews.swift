@@ -267,6 +267,15 @@ struct LobbyView: View {
                             .fill(participant.isConnected ? Color.green : Color.gray)
                             .frame(width: 9, height: 9)
                     }
+                    .swipeActions(edge: .trailing) {
+                        if session.isHost, participant.kind == .bot {
+                            Button(role: .destructive) {
+                                session.removeBot(id: participant.id)
+                            } label: {
+                                Label("lobby.removeBot", systemImage: "trash")
+                            }
+                        }
+                    }
                 }
                 .listStyle(.plain)
                 if session.isHost {
@@ -279,6 +288,16 @@ struct LobbyView: View {
                             .buttonStyle(.borderedProminent)
                             .controlSize(.large)
                     } else {
+                        Menu {
+                            Button("config.ai.easy") { session.addBot(difficulty: .easy) }
+                            Button("config.ai.normal") { session.addBot(difficulty: .normal) }
+                            Button("config.ai.hard") { session.addBot(difficulty: .hard) }
+                        } label: {
+                            Label("lobby.addBot", systemImage: "cpu")
+                        }
+                        .buttonStyle(.bordered)
+                        .controlSize(.large)
+                        .disabled(room.participants.count >= room.descriptor.maximumPlayers)
                         Button("lobby.configure") { session.enterConfiguration() }
                             .buttonStyle(.borderedProminent)
                             .controlSize(.large)

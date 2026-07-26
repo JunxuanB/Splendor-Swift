@@ -27,6 +27,10 @@ public struct Participant: Identifiable, Codable, Hashable, Sendable {
     public let id: UUID
     public var nickname: String
     public var kind: PlayerKind
+    /// Difficulty tier for `.bot` participants; `nil` for humans. Only the host
+    /// (which drives bot turns locally) consults this, but it rides along in the
+    /// broadcast `RoomSnapshot` so clients could surface it if desired.
+    public var difficulty: BotDifficulty?
     public var medalCount: Int
     public var isHost: Bool
     public var isConnected: Bool
@@ -35,6 +39,7 @@ public struct Participant: Identifiable, Codable, Hashable, Sendable {
         id: UUID,
         nickname: String,
         kind: PlayerKind = .human,
+        difficulty: BotDifficulty? = nil,
         medalCount: Int = 0,
         isHost: Bool = false,
         isConnected: Bool = true
@@ -42,13 +47,14 @@ public struct Participant: Identifiable, Codable, Hashable, Sendable {
         self.id = id
         self.nickname = nickname
         self.kind = kind
+        self.difficulty = kind == .bot ? difficulty : nil
         self.medalCount = max(0, medalCount)
         self.isHost = isHost
         self.isConnected = isConnected
     }
 
     private enum CodingKeys: String, CodingKey {
-        case id, nickname, kind, medalCount, isHost, isConnected
+        case id, nickname, kind, difficulty, medalCount, isHost, isConnected
     }
 
     public init(from decoder: Decoder) throws {
@@ -57,6 +63,7 @@ public struct Participant: Identifiable, Codable, Hashable, Sendable {
             id: try container.decode(UUID.self, forKey: .id),
             nickname: try container.decode(String.self, forKey: .nickname),
             kind: try container.decodeIfPresent(PlayerKind.self, forKey: .kind) ?? .human,
+            difficulty: try container.decodeIfPresent(BotDifficulty.self, forKey: .difficulty),
             medalCount: try container.decodeIfPresent(Int.self, forKey: .medalCount) ?? 0,
             isHost: try container.decodeIfPresent(Bool.self, forKey: .isHost) ?? false,
             isConnected: try container.decodeIfPresent(Bool.self, forKey: .isConnected) ?? true
@@ -540,6 +547,9 @@ public extension GameState {
                 localReservedCards: duel.players.first(where: { $0.id == playerID })?.reservedCards ?? [],
                 board: duel.board,
                 bagCount: duel.bag.count,
+                bagTokenCounts: duel.bag.reduce(into: [:]) { counts, color in
+                    counts[color, default: 0] += 1
+                },
                 deckCounts: duel.decks.mapValues(\.count),
                 market: duel.market,
                 availableRoyals: duel.availableRoyals,

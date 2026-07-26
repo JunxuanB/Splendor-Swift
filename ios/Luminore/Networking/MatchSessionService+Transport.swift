@@ -491,7 +491,7 @@ extension MatchSessionService {
     func scheduleOpeningTurnCompletion() {
         openingTurnTask?.cancel()
         guard let selection = openingTurnSelection else {
-            if isHost { scheduleTurnTimer() }
+            if isHost { scheduleTurnTimer(); scheduleBotTurnIfNeeded() }
             return
         }
         let remaining = selection.endsAt.timeIntervalSinceNow
@@ -500,6 +500,7 @@ extension MatchSessionService {
             if isHost {
                 scheduleTurnTimer()
                 broadcastGame()
+                scheduleBotTurnIfNeeded()
             }
             return
         }
@@ -514,6 +515,7 @@ extension MatchSessionService {
                 if self.isHost {
                     self.scheduleTurnTimer()
                     self.broadcastGame()
+                    self.scheduleBotTurnIfNeeded()
                 }
             }
         }

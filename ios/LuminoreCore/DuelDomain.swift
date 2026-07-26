@@ -232,6 +232,7 @@ public struct DuelClientSnapshot: Codable, Equatable, Sendable {
     public let localReservedCards: [DuelJewelCard]
     public let board: [DuelTokenColor?]
     public let bagCount: Int
+    public let bagTokenCounts: [DuelTokenColor: Int]
     public let deckCounts: [Int: Int]
     public let market: [Int: [DuelJewelCard]]
     public let availableRoyals: [DuelRoyalCard]

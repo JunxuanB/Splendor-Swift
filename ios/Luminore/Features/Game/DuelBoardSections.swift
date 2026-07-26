@@ -167,6 +167,7 @@ struct DuelTokenBoardSection: View {
     let onConfirmTake: () -> Void
     let onReplenish: () -> Void
     let onSkipTurn: () -> Void
+    @State private var showsBagContents = false
 
     private let columns = Array(repeating: GridItem(.flexible(), spacing: 6), count: 5)
 
@@ -178,7 +179,17 @@ struct DuelTokenBoardSection: View {
                     .font(.caption2.bold())
                     .foregroundStyle(privilegeMode ? Color.accentColor : .secondary)
                 Spacer()
-                info(icon: "bag", text: "\(duel.bagCount)").duelFlightAnchor(.bag)
+                Button { showsBagContents = true } label: {
+                    info(icon: "bag", text: "\(duel.bagCount)")
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel(Text("duel.bag.open"))
+                .accessibilityValue(Text("\(duel.bagCount)"))
+                .popover(isPresented: $showsBagContents, arrowEdge: .top) {
+                    DuelBagContentsPopover(tokenCounts: duel.bagTokenCounts)
+                        .presentationCompactAdaptation(.popover)
+                }
+                .duelFlightAnchor(.bag)
                 info(icon: "wand.and.stars", text: "\(duel.privilegesInPool)")
             }
 

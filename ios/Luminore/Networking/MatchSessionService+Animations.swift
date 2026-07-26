@@ -63,6 +63,7 @@ extension MatchSessionService {
         guard delay > 0 else {
             if resetsTurnTimer { scheduleTurnTimer() }
             broadcastGame()
+            scheduleBotTurnIfNeeded()
             return
         }
         animationBroadcastTask = Task { [weak self] in
@@ -72,6 +73,7 @@ extension MatchSessionService {
                 guard let self, self.authoritativeGame?.revision == revision else { return }
                 if resetsTurnTimer { self.scheduleTurnTimer() }
                 self.broadcastGame()
+                self.scheduleBotTurnIfNeeded()
                 self.animationBroadcastTask = nil
             }
         }

@@ -16,6 +16,12 @@ struct MultiplayerFlowView: View {
     @State private var rejoinRoomID: UUID?
     @State private var showingServerSettings = false
 
+    private var isLocalTurn: Bool {
+        session.phase == .game
+            && !session.isOpeningTurnSelection
+            && session.game?.currentPlayerID == session.localID
+    }
+
     init(
         profile: AccountProfile,
         mode: MultiplayerMode,
@@ -87,6 +93,7 @@ struct MultiplayerFlowView: View {
 
     var body: some View {
         withLifecycle(withAlerts(withChrome(phaseContent)))
+            .localTurnNotification(isLocalTurn: isLocalTurn)
     }
 
     private func withChrome<V: View>(_ content: V) -> some View {

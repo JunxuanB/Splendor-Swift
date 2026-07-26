@@ -218,7 +218,3 @@ public protocol RoomDiscovery: Sendable {
     func start() async
     func stop() async
 }
-
-public protocol BotController: Sendable {
-    func chooseAction(from snapshot: ClientGameSnapshot, difficulty: BotDifficulty) async -> GameAction
-}

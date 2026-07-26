@@ -212,7 +212,6 @@ struct DuelGameBoardView: View {
             try? await Task.sleep(for: .seconds(2.5))
             duelNotice = nil
         }
-        .sensoryFeedback(trigger: isLocalTurn) { old, new in !old && new ? .success : nil }
         .sensoryFeedback(.impact, trigger: duelNotice) { _, new in new != nil }
     }
 

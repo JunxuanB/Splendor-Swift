@@ -259,9 +259,6 @@ struct GameBoardView: View {
         .onChange(of: snapshot?.currentPlayerID) { _, currentPlayerID in
             if currentPlayerID != session.localID { closePendingTurnUI() }
         }
-        .sensoryFeedback(trigger: isLocalTurn) { wasLocalTurn, isLocalTurn in
-            !wasLocalTurn && isLocalTurn ? .success : nil
-        }
     }
 
     private func opponents(in snapshot: ClientGameSnapshot) -> [PublicPlayerSnapshot] {
