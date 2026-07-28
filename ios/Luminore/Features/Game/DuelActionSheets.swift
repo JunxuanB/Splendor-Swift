@@ -76,12 +76,18 @@ struct DuelReserveSheet: View {
     let card: DuelJewelCard?
     let duel: DuelClientSnapshot
     let player: DuelPublicPlayerSnapshot
+    var selectableGoldIndices: Set<Int>? = nil
     let onConfirm: (Int, [DuelTokenColor: Int]) -> Void
     @Environment(\.dismiss) private var dismiss
     @State private var selectedGoldIndex: Int?
     @State private var returning: [DuelTokenColor: Int] = [:]
 
-    private var goldIndices: [Int] { duel.board.indices.filter { duel.board[$0] == .gold } }
+    private var goldIndices: [Int] {
+        duel.board.indices.filter { index in
+            duel.board[index] == .gold
+                && selectableGoldIndices.map { $0.contains(index) } != false
+        }
+    }
     private var availableAfterGold: [DuelTokenColor: Int] {
         var result = player.tokens
         result[.gold, default: 0] += 1

@@ -10,6 +10,21 @@ enum TutorialSurface: Equatable {
     case duelCards
 }
 
+/// The exact board interaction permitted while an action step is being taught.
+/// This prevents a different, otherwise-valid move from derailing the scripted game.
+enum TutorialInteraction: Equatable {
+    case none
+    case standardTake([GemColor: Int])
+    case standardPurchase(cardID: String)
+    case standardReserve(cardID: String)
+    case duelTake(boardIndices: [Int])
+    case duelSpendPrivilege(boardIndex: Int)
+    case duelReplenish
+    case duelPurchase(cardID: String)
+    case duelReserve(cardID: String, goldBoardIndex: Int)
+    case duelPurchaseReserved(cardID: String)
+}
+
 struct TutorialStep<AnchorID: Hashable>: Identifiable {
     enum Kind {
         case explain
@@ -24,6 +39,7 @@ struct TutorialStep<AnchorID: Hashable>: Identifiable {
     let highlights: [AnchorID]
     /// Duel has separate token/card pages. Standard steps leave this `nil`.
     let surface: TutorialSurface?
+    let interaction: TutorialInteraction
     let kind: Kind
 
     init(
@@ -32,6 +48,7 @@ struct TutorialStep<AnchorID: Hashable>: Identifiable {
         bodyKey: String,
         highlights: [AnchorID],
         surface: TutorialSurface? = nil,
+        interaction: TutorialInteraction = .none,
         kind: Kind
     ) {
         self.id = id
@@ -39,6 +56,7 @@ struct TutorialStep<AnchorID: Hashable>: Identifiable {
         self.bodyKey = bodyKey
         self.highlights = highlights
         self.surface = surface
+        self.interaction = interaction
         self.kind = kind
     }
 
@@ -70,6 +88,7 @@ enum TutorialScript {
                 titleKey: "tutorial.step.take.title",
                 bodyKey: "tutorial.step.take.body",
                 highlights: [.bankGem(.diamond), .bankGem(.sapphire), .bankGem(.emerald)],
+                interaction: .standardTake([.diamond: 1, .sapphire: 1, .emerald: 1]),
                 kind: .action { snapshot, id in Self.tokenCount(snapshot, id) >= 7 }
             ),
             TutorialStep(
@@ -77,6 +96,7 @@ enum TutorialScript {
                 titleKey: "tutorial.step.takeRules.title",
                 bodyKey: "tutorial.step.takeRules.body",
                 highlights: [.bankGem(.ruby)],
+                interaction: .standardTake([.ruby: 2]),
                 kind: .action { snapshot, id in Self.tokenCount(snapshot, id, color: .ruby) >= 3 }
             ),
             TutorialStep(
@@ -84,6 +104,7 @@ enum TutorialScript {
                 titleKey: "tutorial.step.buy.title",
                 bodyKey: "tutorial.step.buy.body",
                 highlights: [.marketCard(TutorialScenario.affordableCardID)],
+                interaction: .standardPurchase(cardID: TutorialScenario.affordableCardID),
                 kind: .action { snapshot, id in Self.purchasedCount(snapshot, id) >= 7 }
             ),
             TutorialStep(
@@ -98,6 +119,7 @@ enum TutorialScript {
                 titleKey: "tutorial.step.discountPurchase.title",
                 bodyKey: "tutorial.step.discountPurchase.body",
                 highlights: [.marketCard(TutorialScenario.permanentExampleCardID)],
+                interaction: .standardPurchase(cardID: TutorialScenario.permanentExampleCardID),
                 kind: .action { snapshot, id in Self.purchasedCount(snapshot, id) >= 8 }
             ),
             TutorialStep(
@@ -105,6 +127,7 @@ enum TutorialScript {
                 titleKey: "tutorial.step.reserve.title",
                 bodyKey: "tutorial.step.reserve.body",
                 highlights: [.marketCard(TutorialScenario.reserveTargetID)],
+                interaction: .standardReserve(cardID: TutorialScenario.reserveTargetID),
                 kind: .action { snapshot, _ in snapshot.localReservedCards.count >= 1 }
             ),
             TutorialStep(
@@ -119,6 +142,7 @@ enum TutorialScript {
                 titleKey: "tutorial.step.noble.title",
                 bodyKey: "tutorial.step.noble.body",
                 highlights: [.nobleTile("tut-noble-1"), .marketCard(TutorialScenario.nobleTriggerCardID)],
+                interaction: .standardPurchase(cardID: TutorialScenario.nobleTriggerCardID),
                 kind: .action { snapshot, id in Self.nobleCount(snapshot, id) >= 1 }
             ),
             TutorialStep(
@@ -147,6 +171,7 @@ enum TutorialScript {
                 bodyKey: "tutorial.duel.step.line.body",
                 highlights: TutorialScenario.duelFirstLine.map(DuelAnchorID.boardCell),
                 surface: .duelTokens,
+                interaction: .duelTake(boardIndices: TutorialScenario.duelFirstLine),
                 kind: .action { snapshot, id in
                     guard snapshot.currentPlayerID == id,
                           let duel = snapshot.duel,
@@ -161,6 +186,7 @@ enum TutorialScript {
                 bodyKey: "tutorial.duel.step.privilege.body",
                 highlights: [.privilegeControl, .boardCell(TutorialScenario.duelPrivilegeTargetIndex)],
                 surface: .duelTokens,
+                interaction: .duelSpendPrivilege(boardIndex: TutorialScenario.duelPrivilegeTargetIndex),
                 kind: .action { snapshot, id in
                     guard let player = snapshot.duel.flatMap({ Self.duelPlayer($0, id) }) else { return false }
                     return player.privileges == 0 && Self.duelTokenCount(player) >= 6
@@ -172,6 +198,7 @@ enum TutorialScript {
                 bodyKey: "tutorial.duel.step.replenish.body",
                 highlights: [.replenishControl, .bag],
                 surface: .duelTokens,
+                interaction: .duelReplenish,
                 kind: .action { snapshot, _ in
                     guard let duel = snapshot.duel else { return false }
                     return duel.bagCount == 0 && duel.turnStage == .mandatoryOnly
@@ -183,6 +210,7 @@ enum TutorialScript {
                 bodyKey: "tutorial.duel.step.pearl.body",
                 highlights: TutorialScenario.duelPearlLine.map(DuelAnchorID.boardCell),
                 surface: .duelTokens,
+                interaction: .duelTake(boardIndices: TutorialScenario.duelPearlLine),
                 kind: .action { snapshot, id in
                     guard snapshot.currentPlayerID == id,
                           let duel = snapshot.duel,
@@ -198,6 +226,7 @@ enum TutorialScript {
                 bodyKey: "tutorial.duel.step.discount.body",
                 highlights: [.marketCard(TutorialScenario.duelDoubleBonusCardID)],
                 surface: .duelCards,
+                interaction: .duelPurchase(cardID: TutorialScenario.duelDoubleBonusCardID),
                 kind: .action { snapshot, id in
                     snapshot.currentPlayerID == id
                         && Self.duelPlayer(snapshot.duel, id)?.purchasedCards.contains {
@@ -214,6 +243,10 @@ enum TutorialScript {
                     .boardCell(TutorialScenario.duelGoldIndex),
                 ],
                 surface: .duelCards,
+                interaction: .duelReserve(
+                    cardID: TutorialScenario.duelReserveCardID,
+                    goldBoardIndex: TutorialScenario.duelGoldIndex
+                ),
                 kind: .action { snapshot, id in
                     snapshot.currentPlayerID == id
                         && snapshot.duel?.localReservedCards.contains {
@@ -227,6 +260,7 @@ enum TutorialScript {
                 bodyKey: "tutorial.duel.step.gold.body",
                 highlights: [.reserved(localID), .token(localID, .gold)],
                 surface: .duelCards,
+                interaction: .duelPurchaseReserved(cardID: TutorialScenario.duelReserveCardID),
                 kind: .action { snapshot, id in
                     snapshot.currentPlayerID == id
                         && Self.duelPlayer(snapshot.duel, id)?.purchasedCards.contains {
@@ -240,6 +274,7 @@ enum TutorialScript {
                 bodyKey: "tutorial.duel.step.ability.body",
                 highlights: [.marketCard(TutorialScenario.duelAbilityCardID)],
                 surface: .duelCards,
+                interaction: .duelPurchase(cardID: TutorialScenario.duelAbilityCardID),
                 kind: .action { snapshot, id in
                     snapshot.currentPlayerID == id
                         && Self.duelPlayer(snapshot.duel, id)?.purchasedCards.contains {
@@ -256,6 +291,7 @@ enum TutorialScript {
                     .royal(TutorialScenario.duelRoyalID),
                 ],
                 surface: .duelCards,
+                interaction: .duelPurchase(cardID: TutorialScenario.duelCrownCardID),
                 kind: .action { snapshot, id in
                     snapshot.currentPlayerID == id
                         && Self.duelPlayer(snapshot.duel, id)?.royalCards.contains {

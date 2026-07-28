@@ -148,6 +148,9 @@ struct OpponentCarousel: View {
 struct GemBankSection: View {
     let bank: [GemColor: Int]
     let isLocalTurn: Bool
+    var selectableGems: Set<GemColor>? = nil
+    var canTakeSelection = true
+    var canPass = true
     @Binding var selectedGems: [GemColor: Int]
     let onToggle: (GemColor) -> Void
     let onTake: () -> Void
@@ -176,7 +179,12 @@ struct GemBankSection: View {
                         .frame(maxWidth: .infinity)
                     }
                     .buttonStyle(.plain)
-                    .disabled(!isLocalTurn || gem == .gold || bank[gem, default: 0] == 0)
+                    .disabled(
+                        !isLocalTurn
+                            || gem == .gold
+                            || bank[gem, default: 0] == 0
+                            || selectableGems.map { !$0.contains(gem) } == true
+                    )
                 }
             }
 
@@ -184,6 +192,8 @@ struct GemBankSection: View {
                 if !selectedGems.isEmpty {
                     Button("game.take", action: onTake)
                         .buttonStyle(.borderedProminent)
+                        .disabled(!canTakeSelection)
+                        .gameFlightAnchor(.takeControl)
                     Button("common.cancel") { selectedGems = [:] }
                         .buttonStyle(.bordered)
                 } else {
@@ -195,7 +205,7 @@ struct GemBankSection: View {
                         .foregroundStyle(.tertiary)
                     Button("game.pass", role: .destructive, action: onPass)
                         .font(.system(size: 9, weight: .semibold))
-                        .disabled(!isLocalTurn)
+                        .disabled(!isLocalTurn || !canPass)
                 }
             }
             .font(.caption2.bold())
@@ -207,6 +217,7 @@ struct GemBankSection: View {
 
 struct NobleSection: View {
     let nobles: [NobleTile]
+    var selectableNobleIDs: Set<String>? = nil
     let onSelect: (NobleTile) -> Void
 
     var body: some View {
@@ -233,6 +244,7 @@ struct NobleSection: View {
     private func nobleButton(_ noble: NobleTile) -> some View {
         Button { onSelect(noble) } label: { NobleTileView(noble: noble) }
             .buttonStyle(.plain)
+            .disabled(selectableNobleIDs.map { !$0.contains(noble.id) } == true)
             .gameFlightAnchor(.nobleTile(noble.id))
     }
 }
@@ -241,6 +253,8 @@ struct MarketSection: View {
     let snapshot: ClientGameSnapshot
     let player: PublicPlayerSnapshot
     let isLocalTurn: Bool
+    var selectableCardIDs: Set<String>? = nil
+    var canReserveDeck = true
     let onSelectCard: (DevelopmentCard, CardSource) -> Void
     let onReserveDeck: (Int) -> Void
 
@@ -256,6 +270,7 @@ struct MarketSection: View {
                     .buttonStyle(.plain)
                     .disabled(
                         !isLocalTurn
+                            || !canReserveDeck
                             || snapshot.deckCounts[tier, default: 0] == 0
                             || snapshot.localReservedCards.count >= 3
                             || snapshot.bank[.gold, default: 0] == 0
@@ -274,6 +289,7 @@ struct MarketSection: View {
                                 .gameFlightAnchor(.marketCard(card.id))
                             }
                             .buttonStyle(CardPressStyle())
+                            .disabled(selectableCardIDs.map { !$0.contains(card.id) } == true)
                         }
                     }
                     .frame(maxWidth: .infinity)

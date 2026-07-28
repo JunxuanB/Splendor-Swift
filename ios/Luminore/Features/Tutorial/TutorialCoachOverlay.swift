@@ -10,6 +10,7 @@ struct TutorialCoachOverlay<AnchorID: Hashable>: View {
     @ObservedObject var controller: TutorialController<AnchorID>
     /// Screen-space rects of the current step's highlighted anchors, pre-resolved.
     let targetRects: [CGRect]
+    var actionHintKey = "tutorial.hint.action"
     let onExit: () -> Void
 
     private let holePadding: CGFloat = 8
@@ -76,7 +77,7 @@ struct TutorialCoachOverlay<AnchorID: Hashable>: View {
                 Spacer()
 
                 if step.isAction {
-                    Label("tutorial.hint.action", systemImage: "hand.tap.fill")
+                    Label(LocalizedStringKey(actionHintKey), systemImage: "hand.tap.fill")
                         .font(.subheadline.weight(.semibold))
                         .foregroundStyle(Color.accentColor)
                         .labelStyle(.titleAndIcon)

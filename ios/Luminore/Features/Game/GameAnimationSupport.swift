@@ -3,6 +3,7 @@ import SwiftUI
 
 enum GameAnchorID: Hashable {
     case bankGem(GemColor)
+    case takeControl
     case playerStack(UUID, GemColor)
     case scoreLabel(UUID)
     case reservedArea(UUID)

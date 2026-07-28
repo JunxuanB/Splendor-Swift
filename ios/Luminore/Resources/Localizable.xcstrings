@@ -6096,6 +6096,7 @@
       }
     },
     "tutorial.hint.action" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -6107,6 +6108,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "试着操作"
+          }
+        }
+      }
+    },
+    "tutorial.hint.confirmTake" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Selection complete — tap Take"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "选择完成，请点击「拿取」"
           }
         }
       }

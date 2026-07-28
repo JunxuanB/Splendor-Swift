@@ -9,6 +9,7 @@ import SwiftUI
 /// though the moved content has already changed underneath.
 enum DuelAnchorID: Hashable {
     case boardCell(Int)
+    case takeControl
     case token(UUID, DuelTokenColor)
     case bag
     case deck(Int)

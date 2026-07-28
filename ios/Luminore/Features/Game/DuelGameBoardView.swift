@@ -89,11 +89,20 @@ struct DuelGameBoardView: View {
                                 duel: duel,
                                 player: localPlayer,
                                 isLocalTurn: isLocalTurn,
+                                selectableIndices: tutorialGuide.selectableBoardIndices,
+                                canConfirmTake: tutorialGuide.canConfirmTake,
+                                canUsePrivilege: tutorialGuide.canUsePrivilege,
+                                canReplenish: tutorialGuide.canReplenish,
+                                canSkipTurn: tutorialGuide.canSkipTurn,
                                 selectedIndices: $selectedIndices,
                                 privilegeMode: $privilegeMode,
                                 onTapToken: tapBoardToken,
                                 onConfirmTake: prepareTake,
-                                onReplenish: { session.submit(.duel(.replenish)) },
+                                onReplenish: {
+                                    guard activeTutorialInteraction == nil
+                                            || activeTutorialInteraction == .duelReplenish else { return }
+                                    session.submit(.duel(.replenish))
+                                },
                                 onSkipTurn: { showsSkipConfirmation = true }
                             )
                             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
@@ -104,7 +113,13 @@ struct DuelGameBoardView: View {
                                 player: localPlayer,
                                 isLocalTurn: isLocalTurn,
                                 showsHighlight: snapshot.configuration.affordableCardHighlightEnabled,
-                                onSelectCard: { selectedCard = DuelCardSelection(card: $0, source: $1) },
+                                selectableCardIDs: tutorialGuide.selectableCardIDs,
+                                selectableRoyalIDs: tutorialGuide.selectableRoyalIDs,
+                                canReserveDeck: activeTutorialInteraction == nil,
+                                onSelectCard: {
+                                    guard tutorialGuide.allowsCard($0.id) else { return }
+                                    selectedCard = DuelCardSelection(card: $0, source: $1)
+                                },
                                 onReserveDeck: { reserveSelection = DuelReserveSelection(source: .deck(tier: $0), card: nil) },
                                 onSelectRoyal: { selectedRoyal = $0 }
                             )
@@ -147,8 +162,9 @@ struct DuelGameBoardView: View {
                 GeometryReader { proxy in
                     TutorialCoachOverlay(
                         controller: tutorial,
-                        targetRects: (tutorial.currentStep?.highlights ?? [])
+                        targetRects: tutorialGuide.highlights(default: tutorial.currentStep?.highlights ?? [])
                             .compactMap { anchors[$0].map { proxy[$0] } },
+                        actionHintKey: tutorialGuide.actionHintKey,
                         onExit: onExit
                     )
                 }
@@ -413,6 +429,20 @@ struct DuelGameBoardView: View {
             }
         }
         .pickerStyle(.segmented)
+        .disabled(activeTutorialInteraction != nil)
+    }
+
+    private var activeTutorialInteraction: TutorialInteraction? {
+        guard tutorial?.phase == .guiding else { return nil }
+        return tutorial?.currentStep?.interaction
+    }
+
+    private var tutorialGuide: DuelTutorialInteractionGuide {
+        DuelTutorialInteractionGuide(
+            interaction: activeTutorialInteraction,
+            selectedIndices: selectedIndices,
+            privilegeMode: privilegeMode
+        )
     }
 
     private func inventoryBar(for player: DuelPublicPlayerSnapshot) -> some View {
@@ -438,8 +468,10 @@ struct DuelGameBoardView: View {
                 source: selection.source,
                 card: selection.card,
                 duel: duel,
-                player: localPlayer
+                player: localPlayer,
+                selectableGoldIndices: tutorialGuide.selectableGoldIndices
             ) { goldIndex, returns in
+                guard tutorialGuide.allowsReserve(selection.card?.id, goldBoardIndex: goldIndex) else { return }
                 session.submit(.duel(.reserve(
                     goldBoardIndex: goldIndex,
                     source: selection.source,
@@ -457,8 +489,11 @@ struct DuelGameBoardView: View {
                 duel: duel,
                 player: localPlayer,
                 opponent: opponent,
-                allowsPurchase: isLocalTurn && duelCanPurchase(selection.card, player: localPlayer),
+                allowsPurchase: isLocalTurn
+                    && duelCanPurchase(selection.card, player: localPlayer)
+                    && tutorialGuide.allowsPurchase(selection.card.id),
                 onPurchase: { payment, choices, returns in
+                    guard tutorialGuide.allowsPurchase(selection.card.id) else { return }
                     session.submit(.duel(.purchase(
                         source: selection.source,
                         payment: payment,
@@ -473,12 +508,19 @@ struct DuelGameBoardView: View {
 
     private func openLocalReservedCards(_ player: DuelPublicPlayerSnapshot) {
         guard let duel else { return }
+        var tutorialTargetID: String?
+        if let interaction = activeTutorialInteraction {
+            guard case let .duelPurchaseReserved(cardID) = interaction else { return }
+            tutorialTargetID = cardID
+        }
+        let purchasableIDs = Set(duel.localReservedCards.filter { card in
+            duelCanPurchase(card, player: player)
+                && tutorialTargetID.map { $0 == card.id } != false
+        }.map(\.id))
         reservedCardsRequest = DuelReservedCardsRequest(
             title: "duel.reserved.title",
             cards: duel.localReservedCards,
-            purchasableCardIDs: isLocalTurn
-                ? Set(duel.localReservedCards.filter { duelCanPurchase($0, player: player) }.map(\.id))
-                : []
+            purchasableCardIDs: isLocalTurn ? purchasableIDs : []
         )
     }
 
@@ -486,6 +528,7 @@ struct DuelGameBoardView: View {
         _ opponent: DuelPublicPlayerSnapshot,
         identity: PublicPlayerSnapshot
     ) {
+        guard activeTutorialInteraction == nil else { return }
         reservedCardsRequest = DuelReservedCardsRequest(
             title: "game.opponent.reserved.title \(identity.nickname)",
             cards: opponent.reservedCards,
@@ -502,6 +545,7 @@ struct DuelGameBoardView: View {
             isReadOnly: request.isReadOnly,
             showsPurchaseHighlight: snapshot?.configuration.affordableCardHighlightEnabled ?? true
         ) { card in
+            guard tutorialGuide.allowsCard(card.id) else { return }
             reservedCardsRequest = nil
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
                 selectedCard = DuelCardSelection(card: card, source: .reserved(cardID: card.id))
@@ -512,6 +556,10 @@ struct DuelGameBoardView: View {
     private func reserveClosure(for selection: DuelCardSelection) -> (() -> Void)? {
         guard isLocalTurn else { return nil }
         if case .reserved = selection.source { return nil }
+        if let interaction = activeTutorialInteraction {
+            guard case let .duelReserve(cardID, _) = interaction,
+                  cardID == selection.card.id else { return nil }
+        }
         return {
             selectedCard = nil
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
@@ -522,6 +570,7 @@ struct DuelGameBoardView: View {
 
     private func tapBoardToken(_ index: Int) {
         guard isLocalTurn, let duel, let color = duel.board[index] else { return }
+        if let selectable = tutorialGuide.selectableBoardIndices, !selectable.contains(index) { return }
         if privilegeMode {
             guard color != .gold, duel.turnStage == .privilegesAvailable else { return }
             session.submit(.duel(.spendPrivilege(boardIndex: index)))
@@ -537,7 +586,8 @@ struct DuelGameBoardView: View {
     }
 
     private func prepareTake() {
-        guard let duel, let localPlayer, !selectedIndices.isEmpty else { return }
+        guard tutorialGuide.canConfirmTake,
+              let duel, let localPlayer, !selectedIndices.isEmpty else { return }
         var available = localPlayer.tokens
         for index in selectedIndices {
             if let color = duel.board[index] { available[color, default: 0] += 1 }

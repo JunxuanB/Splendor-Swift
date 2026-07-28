@@ -62,15 +62,22 @@ struct GameBoardView: View {
                         GemBankSection(
                             bank: snapshot.bank,
                             isLocalTurn: isLocalTurn,
+                            selectableGems: tutorialGuide.selectableGems,
+                            canTakeSelection: tutorialGuide.canTakeSelection,
+                            canPass: tutorialGuide.canPass,
                             selectedGems: $selectedGems,
                             onToggle: { toggleGem($0, bank: snapshot.bank) },
                             onTake: { prepareTake(player: player) },
-                            onPass: { isShowingPassConfirmation = true }
+                            onPass: {
+                                guard activeTutorialInteraction == nil else { return }
+                                isShowingPassConfirmation = true
+                            }
                         )
                         .padding(.vertical, roomy ? 2 : 0)
 
                         NobleSection(
                             nobles: snapshot.availableNobles,
+                            selectableNobleIDs: tutorialGuide.selectableNobleIDs,
                             onSelect: { selectedNoble = $0 }
                         )
                         .padding(.vertical, roomy ? 2 : 0)
@@ -79,10 +86,14 @@ struct GameBoardView: View {
                             snapshot: snapshot,
                             player: player,
                             isLocalTurn: isLocalTurn,
+                            selectableCardIDs: tutorialGuide.selectableCardIDs,
+                            canReserveDeck: tutorial == nil || tutorial?.phase == .freePlay,
                             onSelectCard: { card, source in
+                                guard tutorialGuide.allowsCard(card.id) else { return }
                                 selectedCard = SelectedCard(card: card, source: source)
                             },
                             onReserveDeck: {
+                                guard activeTutorialInteraction == nil else { return }
                                 prepareReserve(.deck(tier: $0), card: nil, player: player, bank: snapshot.bank)
                             }
                         )
@@ -102,6 +113,7 @@ struct GameBoardView: View {
                     deadline: session.turnDeadline,
                     turnDurationSeconds: snapshot.configuration.turnDurationSeconds,
                     onOpenReservedCards: {
+                        guard activeTutorialInteraction == nil else { return }
                         reservedSheet = ReservedCardsSheetRequest(
                             title: "game.reserved.title",
                             cards: snapshot.localReservedCards,
@@ -113,9 +125,11 @@ struct GameBoardView: View {
                     }
                 )
                 .simultaneousGesture(
-                    TapGesture(count: DeveloperTools.unlockTapCount)
+                        TapGesture(count: DeveloperTools.unlockTapCount)
                         .onEnded {
-                            guard DeveloperTools.isEnabledForCurrentBuild, session.isHost else { return }
+                            guard tutorial == nil,
+                                  DeveloperTools.isEnabledForCurrentBuild,
+                                  session.isHost else { return }
                             developerTokens = player.tokens
                             isShowingDeveloperGemEditor = true
                         }
@@ -141,8 +155,9 @@ struct GameBoardView: View {
                 GeometryReader { proxy in
                     TutorialCoachOverlay(
                         controller: tutorial,
-                        targetRects: (tutorial.currentStep?.highlights ?? [])
+                        targetRects: tutorialGuide.highlights(default: tutorial.currentStep?.highlights ?? [])
                             .compactMap { anchors[$0].map { proxy[$0] } },
+                        actionHintKey: tutorialGuide.actionHintKey,
                         onExit: onExit
                     )
                 }
@@ -223,6 +238,8 @@ struct GameBoardView: View {
                     player: player,
                     nobles: snapshot.availableNobles,
                     allowsActions: isLocalTurn,
+                    allowsReserve: tutorialGuide.allowsReserve(selection.card.id),
+                    allowsPurchase: tutorialGuide.allowsPurchase(selection.card.id),
                     hasAvailableGold: snapshot.bank[.gold, default: 0] > 0,
                     showsPurchaseHighlight: snapshot.configuration.affordableCardHighlightEnabled,
                     onReserve: {
@@ -282,7 +299,20 @@ struct GameBoardView: View {
         snapshot.players.filter { $0.id != session.localID }
     }
 
+    private var activeTutorialInteraction: TutorialInteraction? {
+        guard tutorial?.phase == .guiding else { return nil }
+        return tutorial?.currentStep?.interaction
+    }
+
+    private var tutorialGuide: StandardTutorialInteractionGuide {
+        StandardTutorialInteractionGuide(
+            interaction: activeTutorialInteraction,
+            selectedGems: selectedGems
+        )
+    }
+
     private func openOpponentReservedCards(_ opponent: PublicPlayerSnapshot) {
+        guard activeTutorialInteraction == nil else { return }
         reservedSheet = ReservedCardsSheetRequest(
             title: "game.opponent.reserved.title \(opponent.nickname)",
             cards: opponent.reservedCards,
@@ -293,7 +323,7 @@ struct GameBoardView: View {
     }
 
     private func toggleGem(_ gem: GemColor, bank: [GemColor: Int]) {
-        guard gem != .gold, bank[gem, default: 0] > 0 else { return }
+        guard tutorialGuide.allowsGem(gem), gem != .gold, bank[gem, default: 0] > 0 else { return }
         let current = selectedGems[gem, default: 0]
         if selectedGems.count == 1, current == 1, bank[gem, default: 0] >= 4 {
             selectedGems[gem] = 2
@@ -306,6 +336,7 @@ struct GameBoardView: View {
     }
 
     private func prepareTake(player: PublicPlayerSnapshot) {
+        guard tutorialGuide.canTakeSelection else { return }
         var available = player.tokens
         for (gem, count) in selectedGems { available[gem, default: 0] += count }
         let required = max(0, available.values.reduce(0, +) - 10)

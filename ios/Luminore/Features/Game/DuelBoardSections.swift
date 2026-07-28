@@ -165,6 +165,11 @@ struct DuelTokenBoardSection: View {
     let duel: DuelClientSnapshot
     let player: DuelPublicPlayerSnapshot
     let isLocalTurn: Bool
+    var selectableIndices: Set<Int>? = nil
+    var canConfirmTake = true
+    var canUsePrivilege = true
+    var canReplenish = true
+    var canSkipTurn = true
     @Binding var selectedIndices: [Int]
     @Binding var privilegeMode: Bool
     let onTapToken: (Int) -> Void
@@ -212,7 +217,7 @@ struct DuelTokenBoardSection: View {
                                 .duelFlightAnchor(.boardCell(index))
                             }
                             .buttonStyle(.plain)
-                            .disabled(!isLocalTurn)
+                            .disabled(!isLocalTurn || selectableIndices.map { !$0.contains(index) } == true)
                         } else {
                             Circle().strokeBorder(.primary.opacity(0.08), style: StrokeStyle(lineWidth: 1, dash: [3, 3]))
                                 .frame(width: 46, height: 46).frame(maxWidth: .infinity)
@@ -244,7 +249,10 @@ struct DuelTokenBoardSection: View {
                             }.frame(maxWidth: .infinity)
                         }
                         .buttonStyle(.bordered)
-                        .disabled(!isLocalTurn || duel.bagCount == 0 || duel.turnStage != .privilegesAvailable)
+                        .disabled(
+                            !isLocalTurn || !canReplenish
+                                || duel.bagCount == 0 || duel.turnStage != .privilegesAvailable
+                        )
                         .duelFlightAnchor(.replenishControl)
 
                         Button(action: onSkipTurn) {
@@ -255,9 +263,12 @@ struct DuelTokenBoardSection: View {
                         }
                         .buttonStyle(.bordered)
                         .tint(.secondary)
-                        .disabled(!isLocalTurn)
+                        .disabled(!isLocalTurn || !canSkipTurn)
                     } else {
-                        Button("duel.take", action: onConfirmTake).buttonStyle(.borderedProminent)
+                        Button("duel.take", action: onConfirmTake)
+                            .buttonStyle(.borderedProminent)
+                            .disabled(!canConfirmTake)
+                            .duelFlightAnchor(.takeControl)
                         Button("common.cancel") { selectedIndices = [] }.buttonStyle(.bordered)
                     }
                 }
@@ -288,7 +299,10 @@ struct DuelTokenBoardSection: View {
                 Text("×\(player.privileges)").monospacedDigit()
             }.frame(maxWidth: .infinity)
         }
-        .disabled(!isLocalTurn || player.privileges == 0 || duel.turnStage != .privilegesAvailable)
+        .disabled(
+            !isLocalTurn || !canUsePrivilege
+                || player.privileges == 0 || duel.turnStage != .privilegesAvailable
+        )
         .duelFlightAnchor(.privilegeControl)
     }
 
@@ -308,6 +322,9 @@ struct DuelCardBoardSection: View {
     let player: DuelPublicPlayerSnapshot
     let isLocalTurn: Bool
     let showsHighlight: Bool
+    var selectableCardIDs: Set<String>? = nil
+    var selectableRoyalIDs: Set<String>? = nil
+    var canReserveDeck = true
     let onSelectCard: (DuelJewelCard, DuelCardSource) -> Void
     let onReserveDeck: (Int) -> Void
     let onSelectRoyal: (DuelRoyalCard) -> Void
@@ -328,8 +345,11 @@ struct DuelCardBoardSection: View {
                             .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 11))
                         }
                         .buttonStyle(.plain)
-                        .disabled(!isLocalTurn || duel.deckCounts[tier, default: 0] == 0 || player.reservedCardCount >= 3
-                                  || !duel.board.contains(.gold))
+                        .disabled(
+                            !isLocalTurn || !canReserveDeck
+                                || duel.deckCounts[tier, default: 0] == 0 || player.reservedCardCount >= 3
+                                || !duel.board.contains(.gold)
+                        )
                         .duelFlightAnchor(.deck(tier))
 
                         ForEach(Array((duel.market[tier, default: []]).enumerated()), id: \.element.id) { index, card in
@@ -340,6 +360,7 @@ struct DuelCardBoardSection: View {
                                 )
                             }
                             .buttonStyle(.plain)
+                            .disabled(selectableCardIDs.map { !$0.contains(card.id) } == true)
                             .duelFlightAnchor(.marketSlot(tier, index))
                             .duelFlightAnchor(.marketCard(card.id))
                         }
@@ -374,6 +395,7 @@ struct DuelCardBoardSection: View {
                             DuelRoyalCardView(royal: royal).frame(maxWidth: .infinity)
                         }
                         .buttonStyle(.plain)
+                        .disabled(selectableRoyalIDs.map { !$0.contains(royal.id) } == true)
                         .duelFlightAnchor(.royal(royal.id))
                     }
                 }
