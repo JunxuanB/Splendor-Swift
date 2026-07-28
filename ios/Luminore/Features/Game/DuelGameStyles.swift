@@ -190,10 +190,21 @@ struct DuelJewelCardView: View {
     let card: DuelJewelCard
     var enlarged = false
     var affordable = false
+    /// Fixed width for the compact rendering; `nil` fills the available column width
+    /// (used by the reserved-cards grid to mirror the standard game's medium cards).
+    var compactWidth: CGFloat? = 62
+    /// Height for the compact rendering. All compact metrics scale off this so a taller
+    /// card (e.g. the reserved grid) looks proportional rather than a stretched board tile.
+    var compactHeight: CGFloat = 98
 
     private var cornerRadius: CGFloat { enlarged ? 24 : 13 }
     private var bandColor: Color { card.isWildBonus ? .purple : (card.bonusColor?.tint ?? .gray) }
-    private var bandHeight: CGFloat { enlarged ? 118 : 44 }
+    private var bandHeight: CGFloat { enlarged ? 118 : compactHeight * 0.45 }
+    private var bandPadding: CGFloat { enlarged ? 14 : compactHeight * 0.061 }
+    private var bodyPadding: CGFloat { enlarged ? 16 : compactHeight * 0.061 }
+    private var costSize: CGFloat { enlarged ? 28 : compactHeight * 0.153 }
+    private var abilityIconSize: CGFloat { compactHeight * 0.10 }
+    private var crownSize: CGFloat { enlarged ? 18 : compactHeight * 0.102 }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -210,12 +221,12 @@ struct DuelJewelCardView: View {
                     VStack(alignment: .trailing, spacing: 3) {
                         bonusBadge
                         if card.crowns > 0 {
-                            DuelCardCrowns(count: card.crowns, size: enlarged ? 18 : 10)
+                            DuelCardCrowns(count: card.crowns, size: crownSize)
                                 .fixedSize()
                         }
                     }
                 }
-                .padding(enlarged ? 14 : 6)
+                .padding(bandPadding)
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
             }
             .frame(height: bandHeight)
@@ -229,17 +240,17 @@ struct DuelJewelCardView: View {
                             .foregroundStyle(.purple)
                     } else {
                         Image(systemName: ability.iconName)
-                            .font(.system(size: 10, weight: .semibold))
+                            .font(.system(size: abilityIconSize, weight: .semibold))
                             .foregroundStyle(.purple)
                     }
                 }
                 Spacer(minLength: 0)
-                DuelCostRow(cost: card.cost, size: enlarged ? 28 : 15)
+                DuelCostRow(cost: card.cost, size: costSize)
             }
-            .padding(enlarged ? 16 : 6)
+            .padding(bodyPadding)
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
         }
-        .frame(width: enlarged ? nil : 62, height: enlarged ? 232 : 98)
+        .frame(width: enlarged ? nil : compactWidth, height: enlarged ? 232 : compactHeight)
         .background(Color(.secondarySystemGroupedBackground))
         .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
         .overlay {
@@ -257,17 +268,17 @@ struct DuelJewelCardView: View {
     private var bonusBadge: some View {
         ZStack(alignment: .topTrailing) {
             Image(systemName: card.isWildBonus ? "sparkles" : (card.bonusColor?.iconName ?? "minus"))
-                .font(.system(size: enlarged ? 18 : 9, weight: .semibold))
+                .font(.system(size: enlarged ? 18 : compactHeight * 0.092, weight: .semibold))
                 .foregroundStyle(card.isWildBonus ? .white : (card.bonusColor?.foreground ?? .white))
-                .padding(enlarged ? 10 : 5)
+                .padding(enlarged ? 10 : compactHeight * 0.051)
                 .background(bandColor, in: Circle())
             if card.bonusAmount == 2 {
                 Text("2")
-                    .font(.system(size: enlarged ? 11 : 8, weight: .black))
+                    .font(.system(size: enlarged ? 11 : compactHeight * 0.082, weight: .black))
                     .foregroundStyle(.white)
-                    .padding(enlarged ? 3 : 2)
+                    .padding(enlarged ? 3 : compactHeight * 0.02)
                     .background(.black.opacity(0.6), in: Circle())
-                    .offset(x: enlarged ? 4 : 3, y: enlarged ? -4 : -3)
+                    .offset(x: enlarged ? 4 : compactHeight * 0.031, y: enlarged ? -4 : compactHeight * -0.031)
             }
         }
     }

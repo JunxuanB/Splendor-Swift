@@ -490,7 +490,6 @@ struct DuelGameBoardView: View {
                 player: localPlayer,
                 opponent: opponent,
                 allowsPurchase: isLocalTurn
-                    && duelCanPurchase(selection.card, player: localPlayer)
                     && tutorialGuide.allowsPurchase(selection.card.id),
                 onPurchase: { payment, choices, returns in
                     guard tutorialGuide.allowsPurchase(selection.card.id) else { return }

@@ -79,6 +79,7 @@ struct DuelReserveSheet: View {
     var selectableGoldIndices: Set<Int>? = nil
     let onConfirm: (Int, [DuelTokenColor: Int]) -> Void
     @Environment(\.dismiss) private var dismiss
+    @State private var detent: PresentationDetent = .large
     @State private var selectedGoldIndex: Int?
     @State private var returning: [DuelTokenColor: Int] = [:]
 
@@ -135,7 +136,7 @@ struct DuelReserveSheet: View {
                 ToolbarItem(placement: .cancellationAction) { Button("common.cancel") { dismiss() } }
             }
         }
-        .presentationDetents([.medium, .large])
+        .presentationDetents([.medium, .large], selection: $detent)
         .presentationDragIndicator(.visible)
         .onAppear { selectedGoldIndex = goldIndices.first }
     }
@@ -213,6 +214,7 @@ struct DuelPurchaseSheet: View {
     let onReserve: (() -> Void)?
 
     @Environment(\.dismiss) private var dismiss
+    @State private var detent: PresentationDetent = .large
     @State private var coloredPayment: [DuelTokenColor: Int] = [:]
     @State private var wildColor: DuelGemColor?
     @State private var abilityBoardIndex: Int?
@@ -285,7 +287,10 @@ struct DuelPurchaseSheet: View {
                             .foregroundStyle(.purple)
                     }
 
-                    if allowsPurchase {
+                    // Purchase-time choices only make sense when the card is actually
+                    // affordable; when it isn't, the buy button below still shows (disabled),
+                    // mirroring the standard game's always-visible, greyed-out buy button.
+                    if allowsPurchase, paymentValid {
                         choiceSections
                         if requiredReturns > 0 {
                             DuelSheetSection(titleKey: "duel.return.title") {
@@ -302,7 +307,7 @@ struct DuelPurchaseSheet: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar { ToolbarItem(placement: .confirmationAction) { Button("common.close") { dismiss() } } }
         }
-        .presentationDetents([.medium, .large])
+        .presentationDetents([.medium, .large], selection: $detent)
         .presentationDragIndicator(.visible)
         .onAppear { configureDefaults() }
     }
@@ -462,14 +467,18 @@ struct DuelReservedCardsSheet: View {
                     ContentUnavailableView("duel.reserved.empty", systemImage: "rectangle.stack")
                 } else {
                     ScrollView {
-                        LazyVGrid(columns: [GridItem(.adaptive(minimum: 135), spacing: 12)], spacing: 12) {
+                        LazyVGrid(
+                            columns: Array(repeating: GridItem(.flexible(), spacing: 12), count: 3),
+                            spacing: 12
+                        ) {
                             ForEach(cards) { card in
                                 let isPurchasable = purchasableCardIDs.contains(card.id)
                                 VStack(spacing: 8) {
                                     DuelJewelCardView(
                                         card: card,
-                                        enlarged: true,
-                                        affordable: showsPurchaseHighlight && isPurchasable
+                                        affordable: showsPurchaseHighlight && isPurchasable,
+                                        compactWidth: nil,
+                                        compactHeight: 150
                                     )
 
                                     if isPurchasable {
