@@ -67,6 +67,18 @@ struct HomeView: View {
                     VStack(alignment: .leading, spacing: 12) {
                         Text("home.chooseMode").font(.headline)
                         NavigationLink {
+                            TutorialSelectionView(profile: profile)
+                        } label: {
+                            ModeCard(
+                                title: "tutorial.entry.title",
+                                subtitle: "tutorial.entry.subtitle",
+                                systemImage: "graduationcap.fill",
+                                enabled: true
+                            )
+                        }
+                        .buttonStyle(.plain)
+
+                        NavigationLink {
                             MultiplayerFlowView(profile: profile, mode: .lan, medalCount: medalCount)
                         } label: {
                             ModeCard(

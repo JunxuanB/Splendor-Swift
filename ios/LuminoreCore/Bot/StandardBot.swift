@@ -65,14 +65,13 @@ struct StandardBot: BotController {
         }
 
         // Reserves ----------------------------------------------------------
-        if me.reservedCards.count < 3 {
-            let gainsGold = state.bank[.gold, default: 0] > 0
+        if me.reservedCards.count < 3, state.bank[.gold, default: 0] > 0 {
             for tier in 1 ... 3 {
                 for card in state.market[tier] ?? [] {
-                    actions.append(makeReserve(source: .market(cardID: card.id), me: me, gainsGold: gainsGold, demand: demand))
+                    actions.append(makeReserve(source: .market(cardID: card.id), me: me, demand: demand))
                 }
                 if !(state.decks[tier]?.isEmpty ?? true) {
-                    actions.append(makeReserve(source: .deck(tier: tier), me: me, gainsGold: gainsGold, demand: demand))
+                    actions.append(makeReserve(source: .deck(tier: tier), me: me, demand: demand))
                 }
             }
         }
@@ -101,11 +100,10 @@ struct StandardBot: BotController {
     private func makeReserve(
         source: CardSource,
         me: PlayerState,
-        gainsGold: Bool,
         demand: [GemColor: Double]
     ) -> GameAction {
         var projected = me.tokens
-        if gainsGold { projected[.gold, default: 0] += 1 }
+        projected[.gold, default: 0] += 1
         return .reserve(source: source, returning: excessReturns(from: projected, demand: demand))
     }
 

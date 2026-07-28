@@ -15,6 +15,11 @@ enum DuelAnchorID: Hashable {
     case marketSlot(Int, Int)
     case reserved(UUID)
     case score(UUID)
+    case victory(UUID)
+    case marketCard(String)
+    case royal(String)
+    case privilegeControl
+    case replenishControl
 }
 
 struct DuelAnchorKey: PreferenceKey {

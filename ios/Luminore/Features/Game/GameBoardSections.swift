@@ -258,6 +258,7 @@ struct MarketSection: View {
                         !isLocalTurn
                             || snapshot.deckCounts[tier, default: 0] == 0
                             || snapshot.localReservedCards.count >= 3
+                            || snapshot.bank[.gold, default: 0] == 0
                     )
 
                     LazyVGrid(columns: columns, spacing: 5) {

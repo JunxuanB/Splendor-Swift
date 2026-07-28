@@ -22,6 +22,7 @@ public enum GameRuleError: Error, Equatable, LocalizedError, Sendable {
     case tokenLimitViolation
     case cardNotFound
     case reserveLimitReached
+    case noGoldAvailable
     case cardNotAffordable
     case invalidPayment
     case invalidNoble
@@ -37,6 +38,7 @@ public enum GameRuleError: Error, Equatable, LocalizedError, Sendable {
         case .tokenLimitViolation: "The player must finish with exactly 10 or fewer tokens."
         case .cardNotFound: "The selected card is no longer available."
         case .reserveLimitReached: "No more than three cards may be reserved."
+        case .noGoldAvailable: "A card can be reserved only while a gold token is available."
         case .cardNotAffordable: "The selected card cannot be afforded."
         case .invalidPayment: "The selected payment is invalid."
         case .invalidNoble: "The selected noble is invalid."
@@ -195,6 +197,7 @@ private extension StandardRuleset {
         guard returning.values.allSatisfy({ $0 >= 0 }) else { throw GameRuleError.invalidAction }
         let index = state.currentPlayerIndex
         guard state.players[index].reservedCards.count < 3 else { throw GameRuleError.reserveLimitReached }
+        guard state.bank[.gold, default: 0] > 0 else { throw GameRuleError.noGoldAvailable }
 
         let card: DevelopmentCard
         switch source {
@@ -211,10 +214,8 @@ private extension StandardRuleset {
         }
 
         state.players[index].reservedCards.append(card)
-        if state.bank[.gold, default: 0] > 0 {
-            state.bank[.gold, default: 0] -= 1
-            state.players[index].tokens[.gold, default: 0] += 1
-        }
+        state.bank[.gold, default: 0] -= 1
+        state.players[index].tokens[.gold, default: 0] += 1
         try applyReturns(returning, playerIndex: index, state: &state)
     }
 

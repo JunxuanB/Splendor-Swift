@@ -76,20 +76,41 @@ extension MatchSessionService {
         let revision = state.revision
         let delay = botThinkDelay
 
+        var scriptedAction: GameAction?
+        if tutorialOpponentID == currentID, let candidate = tutorialOpponentActions.first {
+            var probe = state
+            if (try? rules.apply(candidate, playerID: currentID, to: &probe)) != nil {
+                scriptedAction = candidate
+            } else {
+                tutorialOpponentID = nil
+                tutorialOpponentActions.removeAll()
+            }
+        }
+
         botTask?.cancel()
         botTask = Task.detached(priority: .userInitiated) {
             try? await Task.sleep(for: .seconds(delay))
             if Task.isCancelled { return }
             // GameState is a Sendable value type — computing the move off the main
             // actor keeps the UI responsive on slower host devices.
-            let controller = BotFactory.make(for: mode)
-            let action = controller.chooseAction(state: state, playerID: currentID, difficulty: difficulty)
+            let action: GameAction
+            if let scriptedAction {
+                action = scriptedAction
+            } else {
+                let controller = BotFactory.make(for: mode)
+                action = controller.chooseAction(state: state, playerID: currentID, difficulty: difficulty)
+            }
             await MainActor.run { [weak self] in
                 guard let self, !Task.isCancelled else { return }
                 guard self.isHost, !self.isPaused, !self.isOpeningTurnSelection,
                       let live = self.authoritativeGame, live.status == .playing,
                       live.revision == revision, live.currentPlayer.id == currentID
                 else { return }
+                if scriptedAction != nil,
+                   self.tutorialOpponentID == currentID,
+                   self.tutorialOpponentActions.first == action {
+                    self.tutorialOpponentActions.removeFirst()
+                }
                 self.apply(action, from: currentID, allowsPass: true)
             }
         }

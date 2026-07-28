@@ -13,8 +13,17 @@ private struct DuelReserveSelection: Identifiable {
     let id = UUID()
 }
 
+private struct DuelReservedCardsRequest: Identifiable {
+    let id = UUID()
+    let title: LocalizedStringKey
+    let cards: [DuelJewelCard]
+    let purchasableCardIDs: Set<String>
+    var isReadOnly = false
+}
+
 struct DuelGameBoardView: View {
     @ObservedObject var session: MatchSessionService
+    var tutorial: TutorialController<DuelAnchorID>? = nil
     let onExit: () -> Void
     let onSaveAndSuspend: () -> Void
 
@@ -25,7 +34,7 @@ struct DuelGameBoardView: View {
     @State private var selectedRoyal: DuelRoyalCard?
     @State private var reserveSelection: DuelReserveSelection?
     @State private var returnDraft: DuelReturnDraft?
-    @State private var showsReserved = false
+    @State private var reservedCardsRequest: DuelReservedCardsRequest?
     @State private var showsExitConfirmation = false
     @State private var showsSkipConfirmation = false
     @State private var duelNotice: DuelActionNotice?
@@ -51,12 +60,15 @@ struct DuelGameBoardView: View {
                 deadline: session.turnDeadline,
                 hasTimer: snapshot?.configuration.turnDurationSeconds != nil,
                 gracePeriodEnabled: snapshot?.configuration.turnGracePeriodEnabled == true,
-                canPause: session.isHost && !session.isPaused && !session.isOpeningTurnSelection,
+                canPause: session.isHost && !session.isPaused && !session.isOpeningTurnSelection && tutorial == nil,
                 onPause: { session.pauseGame() },
                 onExit: { showsExitConfirmation = true }
             )
 
-            if let localPlayer { DuelVictoryHeader(player: localPlayer) }
+            if let localPlayer {
+                DuelVictoryHeader(player: localPlayer)
+                    .duelFlightAnchor(.victory(localPlayer.id))
+            }
             Divider()
 
             GeometryReader { proxy in
@@ -66,7 +78,8 @@ struct DuelGameBoardView: View {
                         DuelOpponentPanel(
                             identity: opponentIdentity,
                             duelPlayer: opponent,
-                            isCurrent: snapshot.currentPlayerID == opponent.id
+                            isCurrent: snapshot.currentPlayerID == opponent.id,
+                            onOpenReservedCards: { openOpponentReservedCards(opponent, identity: opponentIdentity) }
                         )
 
                         pagePicker
@@ -129,6 +142,23 @@ struct DuelGameBoardView: View {
             }
             .allowsHitTesting(false)
         }
+        .overlayPreferenceValue(DuelAnchorKey.self) { anchors in
+            if let tutorial {
+                GeometryReader { proxy in
+                    TutorialCoachOverlay(
+                        controller: tutorial,
+                        targetRects: (tutorial.currentStep?.highlights ?? [])
+                            .compactMap { anchors[$0].map { proxy[$0] } },
+                        onExit: onExit
+                    )
+                }
+            }
+        }
+        .background {
+            if let tutorial {
+                DuelTutorialPageSynchronizer(controller: tutorial, page: $page)
+            }
+        }
         .overlay { if isLocalTurn { CurrentTurnBorder() } }
         .overlay {
             if isLocalTurn, snapshot?.configuration.turnGracePeriodEnabled == true, let deadline = session.turnDeadline {
@@ -174,7 +204,7 @@ struct DuelGameBoardView: View {
         .sheet(item: $reserveSelection) { selection in reserveSheet(selection) }
         .sheet(item: $selectedCard) { selection in purchaseSheet(selection) }
         .sheet(item: $selectedRoyal) { royal in DuelRoyalDetailSheet(royal: royal) }
-        .sheet(isPresented: $showsReserved) { reservedSheet }
+        .sheet(item: $reservedCardsRequest) { request in reservedSheet(request) }
         .sheet(isPresented: $showsDeveloperGemEditor) {
             DeveloperDuelGemEditor(tokens: $developerTokens) {
                 session.developerSetLocalTokens(developerTokens)
@@ -184,6 +214,7 @@ struct DuelGameBoardView: View {
             selectedIndices = []
             privilegeMode = false
             handleSnapshotChange()
+            if let snapshot { tutorial?.handleSnapshot(snapshot) }
         }
         .onChange(of: snapshot?.currentPlayerID) { _, playerID in
             if playerID != session.localID {
@@ -191,7 +222,7 @@ struct DuelGameBoardView: View {
                 selectedRoyal = nil
                 reserveSelection = nil
                 returnDraft = nil
-                showsReserved = false
+                reservedCardsRequest = nil
             }
         }
         .alert("duel.skipTurn.title", isPresented: $showsSkipConfirmation) {
@@ -390,11 +421,11 @@ struct DuelGameBoardView: View {
             isCurrent: isLocalTurn,
             deadline: session.turnDeadline,
             turnDurationSeconds: snapshot?.configuration.turnDurationSeconds
-        ) { showsReserved = true }
+        ) { openLocalReservedCards(player) }
             .simultaneousGesture(
                 TapGesture(count: DeveloperTools.unlockTapCount)
                     .onEnded {
-                        guard DeveloperTools.isEnabledForCurrentBuild, session.isHost else { return }
+                        guard tutorial == nil, DeveloperTools.isEnabledForCurrentBuild, session.isHost else { return }
                         developerTokens = player.tokens
                         showsDeveloperGemEditor = true
                     }
@@ -440,12 +471,40 @@ struct DuelGameBoardView: View {
         }
     }
 
-    @ViewBuilder private var reservedSheet: some View {
-        if let duel, let localPlayer {
-            DuelReservedCardsSheet(cards: duel.localReservedCards, player: localPlayer) { card in
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
-                    selectedCard = DuelCardSelection(card: card, source: .reserved(cardID: card.id))
-                }
+    private func openLocalReservedCards(_ player: DuelPublicPlayerSnapshot) {
+        guard let duel else { return }
+        reservedCardsRequest = DuelReservedCardsRequest(
+            title: "duel.reserved.title",
+            cards: duel.localReservedCards,
+            purchasableCardIDs: isLocalTurn
+                ? Set(duel.localReservedCards.filter { duelCanPurchase($0, player: player) }.map(\.id))
+                : []
+        )
+    }
+
+    private func openOpponentReservedCards(
+        _ opponent: DuelPublicPlayerSnapshot,
+        identity: PublicPlayerSnapshot
+    ) {
+        reservedCardsRequest = DuelReservedCardsRequest(
+            title: "game.opponent.reserved.title \(identity.nickname)",
+            cards: opponent.reservedCards,
+            purchasableCardIDs: [],
+            isReadOnly: true
+        )
+    }
+
+    @ViewBuilder private func reservedSheet(_ request: DuelReservedCardsRequest) -> some View {
+        DuelReservedCardsSheet(
+            title: request.title,
+            cards: request.cards,
+            purchasableCardIDs: request.purchasableCardIDs,
+            isReadOnly: request.isReadOnly,
+            showsPurchaseHighlight: snapshot?.configuration.affordableCardHighlightEnabled ?? true
+        ) { card in
+            reservedCardsRequest = nil
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
+                selectedCard = DuelCardSelection(card: card, source: .reserved(cardID: card.id))
             }
         }
     }
@@ -502,6 +561,30 @@ struct DuelGameBoardView: View {
                     return points.contains(where: { $0 == expected })
                 }
             }
+        }
+    }
+}
+
+private struct DuelTutorialPageSynchronizer: View {
+    @ObservedObject var controller: TutorialController<DuelAnchorID>
+    @Binding var page: DuelBoardPage
+
+    var body: some View {
+        Color.clear
+            .frame(width: 0, height: 0)
+            .onAppear(perform: synchronize)
+            .onChange(of: controller.currentIndex) { _, _ in synchronize() }
+    }
+
+    private func synchronize() {
+        let target: DuelBoardPage?
+        switch controller.currentStep?.surface {
+        case .duelTokens: target = .tokens
+        case .duelCards: target = .cards
+        case nil: target = nil
+        }
+        if let target, page != target {
+            withAnimation(.snappy) { page = target }
         }
     }
 }

@@ -42,6 +42,7 @@ struct DuelOpponentPanel: View {
     let identity: PublicPlayerSnapshot
     let duelPlayer: DuelPublicPlayerSnapshot
     let isCurrent: Bool
+    let onOpenReservedCards: () -> Void
 
     var body: some View {
         VStack(spacing: 5) {
@@ -74,6 +75,9 @@ struct DuelOpponentPanel: View {
             RoundedRectangle(cornerRadius: 18)
                 .strokeBorder(isCurrent ? Color.accentColor.opacity(0.75) : .primary.opacity(0.08), lineWidth: isCurrent ? 2.5 : 1)
         }
+        .contentShape(Rectangle())
+        .onTapGesture(perform: onOpenReservedCards)
+        .accessibilityHint(Text("game.opponent.reserved.hint"))
     }
 
     private func stat(_ value: String, icon: String, tint: Color) -> some View {
@@ -241,6 +245,7 @@ struct DuelTokenBoardSection: View {
                         }
                         .buttonStyle(.bordered)
                         .disabled(!isLocalTurn || duel.bagCount == 0 || duel.turnStage != .privilegesAvailable)
+                        .duelFlightAnchor(.replenishControl)
 
                         Button(action: onSkipTurn) {
                             VStack(spacing: 2) {
@@ -284,6 +289,7 @@ struct DuelTokenBoardSection: View {
             }.frame(maxWidth: .infinity)
         }
         .disabled(!isLocalTurn || player.privileges == 0 || duel.turnStage != .privilegesAvailable)
+        .duelFlightAnchor(.privilegeControl)
     }
 
     private func info(icon: String, text: String) -> some View {
@@ -335,6 +341,7 @@ struct DuelCardBoardSection: View {
                             }
                             .buttonStyle(.plain)
                             .duelFlightAnchor(.marketSlot(tier, index))
+                            .duelFlightAnchor(.marketCard(card.id))
                         }
                         Spacer(minLength: 0)
                     }
@@ -367,6 +374,7 @@ struct DuelCardBoardSection: View {
                             DuelRoyalCardView(royal: royal).frame(maxWidth: .infinity)
                         }
                         .buttonStyle(.plain)
+                        .duelFlightAnchor(.royal(royal.id))
                     }
                 }
             }

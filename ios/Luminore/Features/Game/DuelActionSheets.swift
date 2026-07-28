@@ -286,7 +286,6 @@ struct DuelPurchaseSheet: View {
                                 DuelReturnControls(available: availableAtEnd, required: requiredReturns, returning: $returning)
                             }
                         }
-                        paymentSummary
                     }
 
                     actionButtons
@@ -394,26 +393,6 @@ struct DuelPurchaseSheet: View {
         }
     }
 
-    private var paymentSummary: some View {
-        DuelSheetSection(titleKey: "duel.payment.title") {
-            let spend = payment.filter { $0.value > 0 }.sorted { $0.key.rawValue < $1.key.rawValue }
-            if spend.isEmpty {
-                Text("duel.payment.free").font(.footnote).foregroundStyle(.secondary)
-            } else {
-                HStack(spacing: 6) {
-                    ForEach(spend, id: \.key) { token, count in
-                        DuelTokenChip(color: token, count: count, diameter: 32)
-                    }
-                }
-            }
-            LabeledContent("duel.payment.gold") {
-                Text("\(goldRequired) / \(player.tokens[.gold, default: 0])").monospacedDigit()
-            }
-            .font(.footnote)
-            .foregroundStyle(paymentValid ? Color.secondary : Color.red)
-        }
-    }
-
     private var actionButtons: some View {
         HStack(spacing: 12) {
             if let onReserve {
@@ -462,8 +441,11 @@ struct DuelPurchaseSheet: View {
 }
 
 struct DuelReservedCardsSheet: View {
+    let title: LocalizedStringKey
     let cards: [DuelJewelCard]
-    let player: DuelPublicPlayerSnapshot
+    let purchasableCardIDs: Set<String>
+    let isReadOnly: Bool
+    let showsPurchaseHighlight: Bool
     let onSelect: (DuelJewelCard) -> Void
     @Environment(\.dismiss) private var dismiss
 
@@ -476,18 +458,39 @@ struct DuelReservedCardsSheet: View {
                     ScrollView {
                         LazyVGrid(columns: [GridItem(.adaptive(minimum: 135), spacing: 12)], spacing: 12) {
                             ForEach(cards) { card in
-                                Button {
-                                    dismiss()
-                                    onSelect(card)
-                                } label: {
-                                    DuelJewelCardView(card: card, enlarged: true, affordable: duelCanPurchase(card, player: player))
-                                }.buttonStyle(.plain)
+                                let isPurchasable = purchasableCardIDs.contains(card.id)
+                                VStack(spacing: 8) {
+                                    DuelJewelCardView(
+                                        card: card,
+                                        enlarged: true,
+                                        affordable: showsPurchaseHighlight && isPurchasable
+                                    )
+
+                                    if isPurchasable {
+                                        Button {
+                                            dismiss()
+                                            onSelect(card)
+                                        } label: {
+                                            Label("duel.purchase", systemImage: "cart.fill")
+                                                .font(.caption.bold())
+                                                .frame(maxWidth: .infinity)
+                                        }
+                                        .buttonStyle(.borderedProminent)
+                                        .controlSize(.small)
+                                    }
+                                }
                             }
                         }.padding()
+
+                        Text(isReadOnly ? "game.reserved.hidden.footer" : "game.reserved.maximum")
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                            .padding(.horizontal)
+                            .padding(.bottom)
                     }
                 }
             }
-            .navigationTitle("duel.reserved.title")
+            .navigationTitle(title)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar { ToolbarItem(placement: .confirmationAction) { Button("common.close") { dismiss() } } }
         }

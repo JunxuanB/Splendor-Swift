@@ -33,6 +33,7 @@ struct CardDetailSheet: View {
     let player: PublicPlayerSnapshot
     let nobles: [NobleTile]
     let allowsActions: Bool
+    let hasAvailableGold: Bool
     let showsPurchaseHighlight: Bool
     let onReserve: () -> Void
     let onPurchase: ([GemColor: Int], String?) -> Void
@@ -79,7 +80,7 @@ struct CardDetailSheet: View {
                         }
                         .buttonStyle(.bordered)
                         .frame(maxWidth: .infinity)
-                        .disabled(!allowsActions || player.reservedCardCount >= 3)
+                        .disabled(!allowsActions || !hasAvailableGold || player.reservedCardCount >= 3)
                     }
 
                     Button("game.buy") {

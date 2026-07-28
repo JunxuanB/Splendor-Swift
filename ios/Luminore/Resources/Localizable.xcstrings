@@ -1081,6 +1081,38 @@
         }
       }
     },
+    "duel.bag.open" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "View bag contents"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "查看袋中宝石"
+          }
+        }
+      }
+    },
+    "duel.bag.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bag contents"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "袋中宝石"
+          }
+        }
+      }
+    },
     "duel.board.title" : {
       "localizations" : {
         "en" : {
@@ -1173,38 +1205,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "发展卡"
-          }
-        }
-      }
-    },
-    "duel.bag.open" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "View bag contents"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "查看袋中宝石"
-          }
-        }
-      }
-    },
-    "duel.bag.title" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Bag contents"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "袋中宝石"
           }
         }
       }
@@ -1338,6 +1338,7 @@
       }
     },
     "duel.payment.free" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1354,6 +1355,7 @@
       }
     },
     "duel.payment.gold" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1387,6 +1389,7 @@
       }
     },
     "duel.payment.title" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2516,13 +2519,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Tap to view the opponent's reserved-card count"
+            "value" : "Tap to view the opponent's reserved cards"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "轻点查看对手的预留牌数量"
+            "value" : "轻点查看对手的预留牌"
           }
         }
       }
@@ -5408,6 +5411,1218 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "房主继续了对局，但未将你分配到已保存的座位。"
+          }
+        }
+      }
+    },
+    "tutorial.button.next" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Next"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "下一步"
+          }
+        }
+      }
+    },
+    "tutorial.button.skip" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Skip"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "跳过引导"
+          }
+        }
+      }
+    },
+    "tutorial.done.body" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nice work — you've learned the basics and you're ready to play a real game."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "做得好——你已经学会了基础玩法，可以去开始真正的对局了。"
+          }
+        }
+      }
+    },
+    "tutorial.done.button" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Done"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "完成"
+          }
+        }
+      }
+    },
+    "tutorial.done.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tutorial Complete!"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "教学完成！"
+          }
+        }
+      }
+    },
+    "tutorial.duel.botName" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tutor"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "教学对手"
+          }
+        }
+      }
+    },
+    "tutorial.duel.freePlay.banner" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Free play — buy the highlighted card to reach 20 prestige"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "自由试玩 · 购买高亮卡牌达到 20 声望"
+          }
+        }
+      }
+    },
+    "tutorial.duel.intro.1.body" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You and a teaching opponent share one 5×5 gem board. The guided match uses real Duel rules for every action."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "你和教学对手共用一块 5×5 宝石棋盘。引导局的每一步都会使用真实双人版规则。"
+          }
+        }
+      }
+    },
+    "tutorial.duel.intro.1.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A Duel for Two"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "双人对决"
+          }
+        }
+      }
+    },
+    "tutorial.duel.intro.2.body" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Win immediately with 20 total prestige, 10 crowns, or 10 prestige on cards of one bonus color."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "总声望达到 20、皇冠达到 10，或同一种奖励颜色的卡牌声望达到 10，均会立即获胜。"
+          }
+        }
+      }
+    },
+    "tutorial.duel.intro.2.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Three Ways to Win"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "三种胜利方式"
+          }
+        }
+      }
+    },
+    "tutorial.duel.intro.3.body" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The Gems and Cards tabs switch between the two boards. Tap your opponent's panel to inspect their reserved cards; open yours from the bottom-left, where affordable cards show a Buy button."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“宝石”和“卡牌”标签用于切换两块版图。轻点对手面板可查看其预留牌；从左下角打开自己的预留牌时，可购买的牌会直接显示“购买”按钮。"
+          }
+        }
+      }
+    },
+    "tutorial.duel.intro.3.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Boards and Reserved Cards"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "版图与预留牌"
+          }
+        }
+      }
+    },
+    "tutorial.duel.step.ability.body" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Buy the highlighted purple card, assign its wild bonus to an existing color, and choose a token to steal. Other power icons grant an extra turn, a matching board token, or a privilege."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "购买高亮的紫色卡牌，把万能奖励叠加到已有颜色，并选择一枚对手筹码偷取。其他能力图标可提供额外回合、同色棋盘筹码或特权。"
+          }
+        }
+      }
+    },
+    "tutorial.duel.step.ability.title" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wild Bonuses and Powers"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "万能奖励与卡牌能力"
+          }
+        }
+      }
+    },
+    "tutorial.duel.step.discount.body" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Buy the highlighted card. Your owned colors reduce its printed cost, and this card adds two permanent diamonds for every later purchase."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "购买高亮卡牌。已有颜色会抵扣印刷费用，而这张卡会为之后每次购买提供两个永久钻石。"
+          }
+        }
+      }
+    },
+    "tutorial.duel.step.discount.title" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Permanent and Double Gems"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "永久宝石与双倍奖励"
+          }
+        }
+      }
+    },
+    "tutorial.duel.step.finish.body" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You now have 18 prestige and know every core Duel action. Continue to free play and buy the highlighted two-point card to win; the teaching opponent now uses normal AI."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "你现在拥有 18 声望，并已掌握双人版的核心操作。进入自由试玩后购买高亮的两分卡即可获胜；教学对手接下来会使用普通机器人逻辑。"
+          }
+        }
+      }
+    },
+    "tutorial.duel.step.finish.title" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Finish the Duel"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "完成这场对决"
+          }
+        }
+      }
+    },
+    "tutorial.duel.step.goal.body" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The header tracks total prestige, crowns, and your best single-color prestige. Reaching any target wins immediately."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "顶部依次显示总声望、皇冠和最高单色声望。任意一条达到目标都会立即获胜。"
+          }
+        }
+      }
+    },
+    "tutorial.duel.step.goal.title" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Watch All Three Goals"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "关注三条胜利进度"
+          }
+        }
+      }
+    },
+    "tutorial.duel.step.gold.body" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open your reserved cards from the bottom-left counter. The affordable card is highlighted—tap its Buy button. Its missing ruby is automatically paid with gold."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "从左下角的预留计数打开预留牌。可购买的牌会高亮显示，轻点其“购买”按钮；缺少的红宝石会自动使用黄金补足。"
+          }
+        }
+      }
+    },
+    "tutorial.duel.step.gold.title" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gold Is Wild"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "黄金是万能筹码"
+          }
+        }
+      }
+    },
+    "tutorial.duel.step.line.body" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A line may be horizontal, vertical, or diagonal. Select the three highlighted diagonal tokens, then tap Take. Your opponent will answer with three identical rubies, giving you a privilege."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "直线可以是横向、纵向或斜向。选择高亮的三枚斜线筹码，然后点击“拿取”。对手随后会拿走三枚同色红宝石，因此你将获得一个特权。"
+          }
+        }
+      }
+    },
+    "tutorial.duel.step.line.title" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Take a Straight Line"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "沿直线拿取"
+          }
+        }
+      }
+    },
+    "tutorial.duel.step.pearl.body" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Take the highlighted line containing two pearls. Pearls pay printed pearl costs but never become permanent discounts; taking two at once grants your opponent a privilege."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "拿取包含两枚珍珠的高亮直线。珍珠用于支付卡牌上的珍珠费用，但不会形成永久折扣；一次拿走两枚会让对手获得特权。"
+          }
+        }
+      }
+    },
+    "tutorial.duel.step.pearl.title" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pearls Are Special"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "特殊的珍珠"
+          }
+        }
+      }
+    },
+    "tutorial.duel.step.privilege.body" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tap Use Privilege, then take the highlighted onyx. A privilege is optional and does not end your turn; it cannot take gold."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "点击“使用特权”，再拿走高亮的玛瑙。特权是可选动作，不会结束回合，也不能拿取黄金。"
+          }
+        }
+      }
+    },
+    "tutorial.duel.step.privilege.title" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Spend a Privilege"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "使用特权"
+          }
+        }
+      }
+    },
+    "tutorial.duel.step.replenish.body" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tap Refill to place the bag's tokens into empty spaces along the spiral. Refilling gives your opponent a privilege, then you must take a mandatory action."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "点击“补充”，袋中的筹码会沿螺旋填入空位。补充棋盘会让对手获得一个特权，之后你仍需执行一个主要动作。"
+          }
+        }
+      }
+    },
+    "tutorial.duel.step.replenish.title" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Refill the Board"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "补充棋盘"
+          }
+        }
+      }
+    },
+    "tutorial.duel.step.reserve.body" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open the highlighted card and choose Reserve, then select the gold token. A reservation always removes one visible gold from the board and you may hold up to three cards."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "打开高亮卡牌并选择“预留”，再选择黄金筹码。预留必须拿走棋盘上一枚可见黄金，最多可持有三张预留牌。"
+          }
+        }
+      }
+    },
+    "tutorial.duel.step.reserve.title" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reserve with Gold"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "使用黄金预留"
+          }
+        }
+      }
+    },
+    "tutorial.duel.step.royal.body" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Buy the highlighted crown card. Crossing 3 or 6 crowns requires you to choose an available royal card, which adds prestige and may have a power."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "购买高亮的皇冠卡。皇冠首次达到 3 或 6 时，必须选择一张可用王室牌；王室牌会提供声望，也可能带有能力。"
+          }
+        }
+      }
+    },
+    "tutorial.duel.step.royal.title" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Claim a Royal Card"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "获得王室牌"
+          }
+        }
+      }
+    },
+    "tutorial.duel.subtitle" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Learn the shared board, privileges, powers, and royal cards"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "学习共享棋盘、特权、能力与王室牌"
+          }
+        }
+      }
+    },
+    "tutorial.duel.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Duel"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "双人版"
+          }
+        }
+      }
+    },
+    "tutorial.entry.subtitle" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Learn the rules with a guided game"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "跟着引导局学习规则"
+          }
+        }
+      }
+    },
+    "tutorial.entry.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tutorial"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "教学"
+          }
+        }
+      }
+    },
+    "tutorial.freePlay.banner" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Free play — reach 10 prestige to win"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "自由试玩 · 达到 10 声望即可获胜"
+          }
+        }
+      }
+    },
+    "tutorial.freePlay.end" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "End"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "结束教学"
+          }
+        }
+      }
+    },
+    "tutorial.hint.action" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Try it"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "试着操作"
+          }
+        }
+      }
+    },
+    "tutorial.intro.1.body" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This short tutorial walks you through a designed game so you can learn every core action hands-on."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "这个简短的教学会带你走完一局精心设计的对局，亲手学会每一个核心操作。"
+          }
+        }
+      }
+    },
+    "tutorial.intro.1.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Welcome"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "欢迎"
+          }
+        }
+      }
+    },
+    "tutorial.intro.2.body" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Buy development cards and attract nobles to earn prestige. The first player to reach the target prestige wins."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "购买发展卡、吸引贵族来赚取声望点数。率先达到目标声望的玩家获胜。"
+          }
+        }
+      }
+    },
+    "tutorial.intro.2.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your Goal"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "你的目标"
+          }
+        }
+      }
+    },
+    "tutorial.intro.3.body" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gem tokens sit at the top, nobles in the middle, and the three card rows below. Your gems and cards stay along the bottom."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "宝石筹码在上方，贵族在中间，三排发展卡在下方，你的宝石和卡牌始终显示在底部。"
+          }
+        }
+      }
+    },
+    "tutorial.intro.3.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The Board"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "认识棋盘"
+          }
+        }
+      }
+    },
+    "tutorial.intro.next" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Next"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "下一页"
+          }
+        }
+      }
+    },
+    "tutorial.intro.start" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Start Tutorial"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "开始教学"
+          }
+        }
+      }
+    },
+    "tutorial.selection.subtitle" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose a ruleset to learn with a guided game."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "选择一个版本，通过引导局学习玩法。"
+          }
+        }
+      }
+    },
+    "tutorial.standard.subtitle" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Learn gems, development cards, reserves, and nobles"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "学习宝石、发展卡、预留与贵族规则"
+          }
+        }
+      }
+    },
+    "tutorial.standard.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Classic"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "普通版"
+          }
+        }
+      }
+    },
+    "tutorial.step.buy.body" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tap the highlighted card, then tap Buy. Cards give prestige and a permanent gem bonus."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "点击高亮的卡牌，然后点击「购买」。卡牌能提供声望点数和一个永久宝石。"
+          }
+        }
+      }
+    },
+    "tutorial.step.buy.title" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Buy a Card"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "购买发展卡"
+          }
+        }
+      }
+    },
+    "tutorial.step.discount.body" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cards you own act as permanent gems that discount every future purchase — you don't spend tokens for them."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "你拥有的卡牌会作为永久宝石，为之后每次购买提供折扣——这部分不再需要花费筹码。"
+          }
+        }
+      }
+    },
+    "tutorial.step.discount.title" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Permanent Gems"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "永久宝石"
+          }
+        }
+      }
+    },
+    "tutorial.step.discountPurchase.body" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This card costs 5 diamonds. Your 3 permanent diamonds cover part of the cost, so you only spend the 2 diamond tokens in your hand. Buy it now."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "这张卡需要 5 个钻石。你的 3 个永久钻石会抵扣费用，所以只需支付手中的 2 个钻石筹码。现在购买它。"
+          }
+        }
+      }
+    },
+    "tutorial.step.discountPurchase.title" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Use Permanent Gems"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "使用永久宝石"
+          }
+        }
+      }
+    },
+    "tutorial.step.endgame.body" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You now know every core action. Keep buying cards to reach 10 prestige and win. Play on freely from here!"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "你已经掌握了全部核心操作。继续购买卡牌，达到 10 声望即可获胜。接下来自由发挥吧！"
+          }
+        }
+      }
+    },
+    "tutorial.step.endgame.title" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reaching the Goal"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "冲向目标"
+          }
+        }
+      }
+    },
+    "tutorial.step.goal.body" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This is your prestige. Reach 10 points to win this tutorial game. Let's learn how to earn them."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "这里是你的声望点数。在本教学局中达到 10 分即可获胜。下面来学习如何得分。"
+          }
+        }
+      }
+    },
+    "tutorial.step.goal.title" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Prestige Points"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "声望点数"
+          }
+        }
+      }
+    },
+    "tutorial.step.gold.body" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gold can stand in for a gem of any color when buying a card. You may reserve a card only while at least one gold token remains on the board; reserving takes one of them."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "黄金在购买卡牌时可以充当任意颜色的宝石。只有场上至少还剩一枚黄金时才能预留卡牌，预留时会拿走其中一枚。"
+          }
+        }
+      }
+    },
+    "tutorial.step.gold.title" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gold is Wild"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "黄金是万能币"
+          }
+        }
+      }
+    },
+    "tutorial.step.noble.body" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Buy the highlighted card. When your permanent gems meet a noble's requirement, the noble visits automatically for extra prestige."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "购买高亮的卡牌。当你的永久宝石满足某位贵族的需求时，贵族会自动来拜访，带来额外声望。"
+          }
+        }
+      }
+    },
+    "tutorial.step.noble.title" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Attract a Noble"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "吸引贵族"
+          }
+        }
+      }
+    },
+    "tutorial.step.reserve.body" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "While gold remains on the board, tap the highlighted card and choose Reserve to save it for later and take one gold token."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "场上还有黄金时，点击高亮的卡牌并选择「预留」，把它留到之后购买，同时获得一枚黄金。"
+          }
+        }
+      }
+    },
+    "tutorial.step.reserve.title" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reserve a Card"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "预留卡牌"
+          }
+        }
+      }
+    },
+    "tutorial.step.take.body" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tap three different-colored gems, then tap Take. Gems are the currency you spend on cards."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "点击三个不同颜色的宝石，然后点击「拿取」。宝石是购买卡牌的货币。"
+          }
+        }
+      }
+    },
+    "tutorial.step.take.title" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Take Gems"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "拿取宝石"
+          }
+        }
+      }
+    },
+    "tutorial.step.takeRules.body" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You may also take 2 gems of one color when at least 4 remain. Tap the highlighted ruby twice, then tap Take. You can hold at most 10 gems."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "当一种宝石还剩至少 4 个时，也可以一次拿取 2 个同色宝石。连续点击两次高亮的红宝石，再点击「拿取」。手上最多持有 10 个宝石。"
+          }
+        }
+      }
+    },
+    "tutorial.step.takeRules.title" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Two Ways to Take"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "两种拿法"
           }
         }
       }

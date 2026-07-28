@@ -219,12 +219,59 @@ public struct DuelPublicPlayerSnapshot: Identifiable, Codable, Equatable, Sendab
     public let tokens: [DuelTokenColor: Int]
     public let purchasedCards: [DuelOwnedCard]
     public let royalCards: [DuelRoyalCard]
+    public let reservedCards: [DuelJewelCard]
     public let reservedCardCount: Int
     public let privileges: Int
     public let prestige: Int
     public let crowns: Int
     public let bonuses: [DuelGemColor: Int]
     public let colorPrestige: [DuelGemColor: Int]
+
+    private enum CodingKeys: String, CodingKey {
+        case id, tokens, purchasedCards, royalCards, reservedCards, reservedCardCount
+        case privileges, prestige, crowns, bonuses, colorPrestige
+    }
+
+    public init(
+        id: UUID,
+        tokens: [DuelTokenColor: Int],
+        purchasedCards: [DuelOwnedCard],
+        royalCards: [DuelRoyalCard],
+        reservedCards: [DuelJewelCard],
+        reservedCardCount: Int,
+        privileges: Int,
+        prestige: Int,
+        crowns: Int,
+        bonuses: [DuelGemColor: Int],
+        colorPrestige: [DuelGemColor: Int]
+    ) {
+        self.id = id
+        self.tokens = tokens
+        self.purchasedCards = purchasedCards
+        self.royalCards = royalCards
+        self.reservedCards = reservedCards
+        self.reservedCardCount = reservedCardCount
+        self.privileges = privileges
+        self.prestige = prestige
+        self.crowns = crowns
+        self.bonuses = bonuses
+        self.colorPrestige = colorPrestige
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(UUID.self, forKey: .id)
+        tokens = try container.decode([DuelTokenColor: Int].self, forKey: .tokens)
+        purchasedCards = try container.decode([DuelOwnedCard].self, forKey: .purchasedCards)
+        royalCards = try container.decode([DuelRoyalCard].self, forKey: .royalCards)
+        reservedCards = try container.decodeIfPresent([DuelJewelCard].self, forKey: .reservedCards) ?? []
+        reservedCardCount = try container.decode(Int.self, forKey: .reservedCardCount)
+        privileges = try container.decode(Int.self, forKey: .privileges)
+        prestige = try container.decode(Int.self, forKey: .prestige)
+        crowns = try container.decode(Int.self, forKey: .crowns)
+        bonuses = try container.decode([DuelGemColor: Int].self, forKey: .bonuses)
+        colorPrestige = try container.decode([DuelGemColor: Int].self, forKey: .colorPrestige)
+    }
 }
 
 public struct DuelClientSnapshot: Codable, Equatable, Sendable {

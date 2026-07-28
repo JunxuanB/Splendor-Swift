@@ -100,6 +100,10 @@ final class MatchSessionService: ObservableObject {
     /// Host-side task that computes and applies the current bot seat's move.
     /// Cancelled and rescheduled whenever the authoritative game advances.
     var botTask: Task<Void, Never>?
+    /// Tutorial-only bot override. These actions are validated against the live
+    /// authoritative state before use; normal AI takes over if validation fails.
+    var tutorialOpponentID: UUID?
+    var tutorialOpponentActions: [GameAction] = []
     var reconnectTask: Task<Void, Never>?
     var animationBroadcastTask: Task<Void, Never>?
     /// Host-side pause truth (the client mirrors `matchPause` from the snapshot).
@@ -284,6 +288,8 @@ final class MatchSessionService: ObservableObject {
         game = nil
         openingTurnTask?.cancel()
         botTask?.cancel()
+        tutorialOpponentID = nil
+        tutorialOpponentActions.removeAll()
         openingTurnSelection = nil
         clearPauseState()
         isAwaitingResumeAssignment = false
@@ -310,6 +316,8 @@ final class MatchSessionService: ObservableObject {
         turnTask?.cancel()
         openingTurnTask?.cancel()
         botTask?.cancel()
+        tutorialOpponentID = nil
+        tutorialOpponentActions.removeAll()
         reconnectTask?.cancel()
         animationBroadcastTask?.cancel()
         disconnectGraceTask?.cancel()

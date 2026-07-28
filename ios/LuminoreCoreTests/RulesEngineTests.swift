@@ -99,6 +99,25 @@ final class RulesEngineTests: XCTestCase {
         XCTAssertEqual(state.decks[1]?.count, deckCount - 1)
     }
 
+    func testReserveRequiresAvailableGoldAndIsAtomic() throws {
+        var state = try makeGame(count: 2)
+        let playerID = state.currentPlayer.id
+        state.bank[.gold] = 0
+        let cardID = try XCTUnwrap(state.market[1]?.first?.id)
+        let original = state
+
+        XCTAssertThrowsError(
+            try rules.apply(
+                .reserve(source: .market(cardID: cardID), returning: [:]),
+                playerID: playerID,
+                to: &state
+            )
+        ) { error in
+            XCTAssertEqual(error as? GameRuleError, .noGoldAvailable)
+        }
+        XCTAssertEqual(state, original, "Rejected reserve must not remove or refill a card")
+    }
+
     func testPurchaseMarketCardRefillsItsOriginalPosition() throws {
         var state = try makeGame(count: 2)
         let index = state.currentPlayerIndex

@@ -536,6 +536,7 @@ public extension GameState {
                         tokens: $0.tokens,
                         purchasedCards: $0.purchasedCards,
                         royalCards: $0.royalCards,
+                        reservedCards: $0.reservedCards,
                         reservedCardCount: $0.reservedCards.count,
                         privileges: $0.privileges,
                         prestige: $0.prestige,

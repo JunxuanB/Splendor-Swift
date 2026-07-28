@@ -107,7 +107,7 @@ final class DuelRulesetTests: XCTestCase {
         XCTAssertThrowsError(try rules.apply(.duel(.spendPrivilege(boardIndex: 2)), playerID: actor, to: &state))
     }
 
-    func testReservationTakesSelectedGoldAndKeepsCardSecretInSnapshots() throws {
+    func testReservationTakesSelectedGoldAndIsVisibleInPlayerSnapshots() throws {
         var state = try makeGame()
         let actor = state.currentPlayer.id
         let actorIndex = state.currentPlayerIndex
@@ -120,8 +120,35 @@ final class DuelRulesetTests: XCTestCase {
         )
         XCTAssertEqual(state.duel!.players[actorIndex].tokens[.gold], 1)
         XCTAssertEqual(state.duel!.players[actorIndex].reservedCards.map(\.id), [card.id])
-        XCTAssertEqual(state.snapshot(for: actor).duel?.localReservedCards.map(\.id), [card.id])
-        XCTAssertTrue(state.snapshot(for: state.players[1 - actorIndex].id).duel?.localReservedCards.isEmpty == true)
+        let actorSnapshot = try XCTUnwrap(state.snapshot(for: actor).duel)
+        XCTAssertEqual(actorSnapshot.localReservedCards.map(\.id), [card.id])
+        XCTAssertEqual(actorSnapshot.players.first { $0.id == actor }?.reservedCards.map(\.id), [card.id])
+
+        let opponentSnapshot = try XCTUnwrap(
+            state.snapshot(for: state.players[1 - actorIndex].id).duel
+        )
+        XCTAssertTrue(opponentSnapshot.localReservedCards.isEmpty)
+        XCTAssertEqual(opponentSnapshot.players.first { $0.id == actor }?.reservedCards.map(\.id), [card.id])
+    }
+
+    func testLegacyDuelPlayerSnapshotWithoutReservedCardsStillDecodes() throws {
+        let state = try makeGame()
+        let data = try JSONEncoder().encode(state.snapshot(for: state.currentPlayer.id))
+        var object = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
+        var duel = try XCTUnwrap(object["duel"] as? [String: Any])
+        var players = try XCTUnwrap(duel["players"] as? [[String: Any]])
+        players = players.map { player in
+            var legacyPlayer = player
+            legacyPlayer.removeValue(forKey: "reservedCards")
+            return legacyPlayer
+        }
+        duel["players"] = players
+        object["duel"] = duel
+
+        let legacyData = try JSONSerialization.data(withJSONObject: object)
+        let decoded = try JSONDecoder().decode(ClientGameSnapshot.self, from: legacyData)
+
+        XCTAssertTrue(decoded.duel?.players.allSatisfy(\.reservedCards.isEmpty) == true)
     }
 
     func testSnapshotIncludesBagTokenCounts() throws {

@@ -3,6 +3,7 @@ import SwiftUI
 
 struct GameBoardView: View {
     @ObservedObject var session: MatchSessionService
+    var tutorial: TutorialController<GameAnchorID>? = nil
     let onExit: () -> Void
     let onSaveAndSuspend: () -> Void
 
@@ -33,7 +34,7 @@ struct GameBoardView: View {
                 deadline: session.turnDeadline,
                 hasTimer: snapshot?.configuration.turnDurationSeconds != nil,
                 gracePeriodEnabled: snapshot?.configuration.turnGracePeriodEnabled == true,
-                canPause: session.isHost && !session.isPaused && !session.isOpeningTurnSelection,
+                canPause: session.isHost && !session.isPaused && !session.isOpeningTurnSelection && tutorial == nil,
                 onPause: { session.pauseGame() },
                 onExit: { isShowingExitConfirmation = true }
             )
@@ -49,12 +50,14 @@ struct GameBoardView: View {
 
                 if let snapshot, let player = localPlayer {
                     VStack(spacing: roomy ? 10 : 6) {
-                        OpponentCarousel(
-                            opponents: opponents(in: snapshot),
-                            currentPlayerID: snapshot.currentPlayerID,
-                            opponentIndex: $opponentIndex,
-                            onOpenReservedCards: openOpponentReservedCards
-                        )
+                        if !opponents(in: snapshot).isEmpty {
+                            OpponentCarousel(
+                                opponents: opponents(in: snapshot),
+                                currentPlayerID: snapshot.currentPlayerID,
+                                opponentIndex: $opponentIndex,
+                                onOpenReservedCards: openOpponentReservedCards
+                            )
+                        }
 
                         GemBankSection(
                             bank: snapshot.bank,
@@ -133,6 +136,18 @@ struct GameBoardView: View {
             }
             .allowsHitTesting(false)
         }
+        .overlayPreferenceValue(GameAnchorKey.self) { anchors in
+            if let tutorial {
+                GeometryReader { proxy in
+                    TutorialCoachOverlay(
+                        controller: tutorial,
+                        targetRects: (tutorial.currentStep?.highlights ?? [])
+                            .compactMap { anchors[$0].map { proxy[$0] } },
+                        onExit: onExit
+                    )
+                }
+            }
+        }
         .overlay {
             if isLocalTurn {
                 CurrentTurnBorder()
@@ -208,6 +223,7 @@ struct GameBoardView: View {
                     player: player,
                     nobles: snapshot.availableNobles,
                     allowsActions: isLocalTurn,
+                    hasAvailableGold: snapshot.bank[.gold, default: 0] > 0,
                     showsPurchaseHighlight: snapshot.configuration.affordableCardHighlightEnabled,
                     onReserve: {
                         guard isLocalTurn else { return }
@@ -252,6 +268,7 @@ struct GameBoardView: View {
             selectedGems = [:]
             let count = snapshot.map { opponents(in: $0).count } ?? 0
             opponentIndex = count == 0 ? 0 : min(opponentIndex, count - 1)
+            if let snapshot { tutorial?.handleSnapshot(snapshot) }
         }
         .onChange(of: session.gameAnimationEvent) { _, event in
             if let event { animate(event) }
@@ -306,8 +323,9 @@ struct GameBoardView: View {
         player: PublicPlayerSnapshot,
         bank: [GemColor: Int]
     ) {
+        guard bank[.gold, default: 0] > 0 else { return }
         var available = player.tokens
-        if bank[.gold, default: 0] > 0 { available[.gold, default: 0] += 1 }
+        available[.gold, default: 0] += 1
         let required = max(0, available.values.reduce(0, +) - 10)
         if required > 0 {
             pendingReturn = PendingReturn(kind: .reserve(source, card), available: available, required: required)
