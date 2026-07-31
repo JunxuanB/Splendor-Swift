@@ -290,8 +290,10 @@ struct GameBoardView: View {
         .onChange(of: session.gameAnimationEvent) { _, event in
             if let event { animate(event) }
         }
-        .onChange(of: snapshot?.currentPlayerID) { _, currentPlayerID in
+        .onChange(of: snapshot?.currentPlayerID, initial: true) { _, currentPlayerID in
+            guard let currentPlayerID else { return }
             if currentPlayerID != session.localID { closePendingTurnUI() }
+            focusOnPlayer(currentPlayerID)
         }
     }
 

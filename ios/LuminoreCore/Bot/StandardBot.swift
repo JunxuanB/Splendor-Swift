@@ -8,6 +8,7 @@ import Foundation
 /// look-ahead against the next opponent's best reply.
 struct StandardBot: BotController {
     private let engine = RulesEngine()
+    private let nobleProximityWeight = 24.0
 
     func chooseAction(state: GameState, playerID: UUID, difficulty: BotDifficulty) -> GameAction {
         guard state.currentPlayer.id == playerID else { return .pass }
@@ -269,7 +270,7 @@ struct StandardBot: BotController {
             }
             guard required > 0 else { continue }
             let fraction = Double(covered) / Double(required)
-            score += fraction * fraction * Double(noble.prestige) * 22
+            score += fraction * fraction * Double(noble.prestige) * nobleProximityWeight
         }
         return score
     }
